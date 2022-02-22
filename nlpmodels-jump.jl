@@ -1,8 +1,10 @@
 time_start = time()
 
 using PowerModels
-using Ipopt
 using JuMP
+using NLPModels
+using NLPModelsJuMP
+using NLPModelsIpopt
 
 pkg_load_time = time() - time_start
 
@@ -19,11 +21,9 @@ ref = PowerModels.build_ref(data)[:it][:pm][:nw][0]
 data_load_time = time() - time_start
 
 
-
 time_start = time()
 
-model = Model(Ipopt.Optimizer)
-#set_optimizer_attribute(model, "print_level", 0)
+model = JuMP.Model()
 
 @variable(model, va[i in keys(ref[:bus])])
 @variable(model, ref[:bus][i]["vmin"] <= vm[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
@@ -34,7 +34,9 @@ model = Model(Ipopt.Optimizer)
 @variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 @variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 
+
 @objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+
 
 for (i,bus) in ref[:ref_buses]
     @constraint(model, va[i] == 0)
@@ -99,13 +101,16 @@ for (i,branch) in ref[:branch]
     @constraint(model, p_to^2 + q_to^2 <= branch["rate_a"]^2)
 end
 
+nlp = MathOptNLPModel(model)
+
 model_build_time = time() - time_start
 
 
 time_start = time()
 
-optimize!(model)
-cost = objective_value(model)
+#output = ipopt(nlp, print_level=0)
+output = ipopt(nlp)
+cost = output.objective
 
 solve_time = time() - time_start
 
@@ -119,3 +124,4 @@ println("   data time.: $(data_load_time)")
 println("   build time: $(model_build_time)")
 println("   solve time: $(solve_time)")
 println("")
+
