@@ -2,7 +2,6 @@ time_start = time()
 
 using PowerModels
 using JuMP
-using NLPModels
 using NLPModelsJuMP
 using NLPModelsIpopt
 
@@ -12,6 +11,7 @@ pkg_load_time = time() - time_start
 time_start = time()
 
 file_name = "data/pglib_opf_case5_pjm.m"
+#file_name = "data/pglib_opf_case118_ieee.m"
 
 data = PowerModels.parse_file(file_name)
 PowerModels.standardize_cost_terms!(data, order=2)
