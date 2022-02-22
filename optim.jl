@@ -1,7 +1,9 @@
 # https://github.com/JuliaNLSolvers/Optim.jl
 
+# WIP
+
 # apparently supports optimization with manifold constraints
-# unable to find an example
+# unable to find an example...
 
 using Optim
 
