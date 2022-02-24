@@ -73,22 +73,20 @@ for (i,branch) in ref[:branch]
     br_b_to[i] = branch["b_to"]
 end
 
-x0 = Float64[]
-
 for (i,bus) in ref[:bus]
-    addvar!(model, "va_$(i)", -Inf, Inf); push!(x0, 0.0) #va
-    addvar!(model, "vm_$(i)", bus["vmin"], bus["vmax"], init=1.0); push!(x0, 1.0) #vm
+    addvar!(model, "va_$(i)", -Inf, Inf) #va
+    addvar!(model, "vm_$(i)", bus["vmin"], bus["vmax"], init=1.0) #vm
 end
 
 for (i,gen) in ref[:gen]
-    addvar!(model, "pg_$(i)", gen["pmin"], gen["pmax"]); push!(x0, 0.0) #pg
-    addvar!(model, "qg_$(i)", gen["qmin"], gen["qmax"]); push!(x0, 0.0) #qg
+    addvar!(model, "pg_$(i)", gen["pmin"], gen["pmax"]) #pg
+    addvar!(model, "qg_$(i)", gen["qmin"], gen["qmax"]) #qg
 end
 
 for (l,i,j) in ref[:arcs]
     branch = ref[:branch][l]
-    addvar!(model, "p_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]); push!(x0, 0.0) #p
-    addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]); push!(x0, 0.0) #q
+    addvar!(model, "p_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #p
+    addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #q
 end
 
 #@assert var_idx == length(var_init)+1
@@ -105,7 +103,7 @@ end
 
 set_objective!(model, opf_objective)
 
-println(model)
+#println(model)
 
 model_build_time = time() - time_start
 
@@ -114,7 +112,9 @@ time_start = time()
 
 alg = IpoptAlg()
 options = IpoptOptions(print_level = 0)
-r = optimize(model, alg, x0, options = options)
+x0 = NonconvexCore.getinit(model)
+#r = optimize(model, alg, x0, options = options)
+r = optimize(model, alg, x0)
 
 solve_time = time() - time_start
 

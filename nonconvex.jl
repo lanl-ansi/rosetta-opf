@@ -76,28 +76,22 @@ end
 
 var_lookup = Dict{String,Int}()
 
-var_init = Float64[]
-
 var_idx = 1
 for (i,bus) in ref[:bus]
-    push!(var_init, 0.0) #va
     addvar!(model, -Inf, Inf) #va
     var_lookup["va_$(i)"] = var_idx
     global var_idx += 1
 
-    push!(var_init, 1.0) #vm
     addvar!(model, bus["vmin"], bus["vmax"], init=1.0) #vm
     var_lookup["vm_$(i)"] = var_idx
     global var_idx += 1
 end
 
 for (i,gen) in ref[:gen]
-    push!(var_init, 0.0)
     addvar!(model, gen["pmin"], gen["pmax"]) #pg
     var_lookup["pg_$(i)"] = var_idx
     global var_idx += 1
 
-    push!(var_init, 0.0) #qg
     addvar!(model, gen["qmin"], gen["qmax"]) #qg
     var_lookup["qg_$(i)"] = var_idx
     global var_idx += 1
@@ -106,18 +100,16 @@ end
 for (l,i,j) in ref[:arcs]
     branch = ref[:branch][l]
 
-    push!(var_init, 0.0)
     addvar!(model, -branch["rate_a"], branch["rate_a"]) #p
     var_lookup["p_$(l)_$(i)_$(j)"] = var_idx
     global var_idx += 1
 
-    push!(var_init, 0.0) #q
     addvar!(model, -branch["rate_a"], branch["rate_a"]) #q
     var_lookup["q_$(l)_$(i)_$(j)"] = var_idx
     global var_idx += 1
 end
 
-@assert var_idx == length(var_init)+1
+@assert var_idx == length(var_lookup)+1
 
 
 function opf_objective(x::Vector)
@@ -140,11 +132,13 @@ time_start = time()
 
 alg = IpoptAlg()
 options = IpoptOptions(print_level = 0)
+x0 = NonconvexCore.getinit(model)
+#r = optimize(model, alg, x0, options = options)
 
 # Nonconvex v1.0.2
 # ERROR: LoadError: MethodError: no method matching getindex(::Dict{Any, Any})
 # something to do with :Zygote it seems
-r = optimize(model, alg, var_init, options = options)
+r = optimize(model, alg, x0)
 
 solve_time = time() - time_start
 
