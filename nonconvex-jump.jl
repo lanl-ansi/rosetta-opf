@@ -35,9 +35,15 @@ model = JuMP.Model()
 @variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 
 # https://github.com/JuliaNonconvex/Nonconvex.jl/issues/129
-@variable(model, t)
-@constraint(model, t >= sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
-@objective(model, Min, 1.0 * t)
+#@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+
+# work around 1
+@NLobjective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+
+# work around 2
+#@variable(model, t)
+#@constraint(model, t >= sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+#@objective(model, Min, 1.0 * t)
 
 
 for (i,bus) in ref[:ref_buses]
@@ -107,13 +113,18 @@ ncvx_model = DictModel(model)
 
 model_build_time = time() - time_start
 
+### used to test that JuMP model is building correctly
+# using Ipopt
+# set_optimizer(model, Ipopt.Optimizer)
+# optimize!(model)
 
 time_start = time()
 
 alg = IpoptAlg()
 options = IpoptOptions(print_level = 0)
 x0 = NonconvexCore.getinit(ncvx_model)
-r = optimize(ncvx_model, alg, x0, options = options)
+#r = optimize(ncvx_model, alg, x0, options = options)
+r = optimize(ncvx_model, alg, x0)
 
 solve_time = time() - time_start
 
