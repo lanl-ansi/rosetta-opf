@@ -34,16 +34,10 @@ model = JuMP.Model()
 @variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 @variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 
-
-# Nonconvex v1.0.2
-# ERROR: LoadError: AssertionError: obj isa AffExpr
-# Stacktrace:
-#  [1] get_objective_info(model::JuMP.Model, nvars::Int64)
-#    @ NonconvexCore ~/.julia/packages/NonconvexCore/YjDSM/src/models/jump.jl:184
-#  [2] DictModel(model::JuMP.Model)
-#    @ NonconvexCore ~/.julia/packages/NonconvexCore/YjDSM/src/models/jump.jl:204
-#  [3] top-level scope
-#@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+# https://github.com/JuliaNonconvex/Nonconvex.jl/issues/129
+@variable(model, t)
+@constraint(model, t >= sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+@objective(model, Min, 1.0 * t)
 
 
 for (i,bus) in ref[:ref_buses]
@@ -118,13 +112,7 @@ time_start = time()
 
 alg = IpoptAlg()
 options = IpoptOptions(print_level = 0)
-# TODO how to get mapping and init values?
-x0 = [0.0 for i in 1:JuMP.num_variables(model)]
-println(x0)
-
-# Nonconvex v1.0.2
-# ERROR: LoadError: MethodError: no method matching flatten(::Vector{Float64}, ::Vector{Symbol})
-# something to do with :Zygote it seems
+x0 = NonconvexCore.getinit(ncvx_model)
 r = optimize(ncvx_model, alg, x0, options = options)
 
 solve_time = time() - time_start
