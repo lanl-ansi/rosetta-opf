@@ -27,15 +27,17 @@ model = Model()
 #model = Model(Ipopt.Optimizer)
 #set_optimizer_attribute(model, "print_level", 0)
 
-@variable(model, va[i in keys(ref[:bus])])
 @variable(model, -ref[:bus][i]["vmax"] <= vr[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
-@variable(model, -ref[:bus][i]["vmax"] <= vi[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
+@variable(model, -ref[:bus][i]["vmax"] <= vi[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=0.0)
+V = Dict(i => vr[i] + vi[i]*im for i in keys(ref[:bus]))
 
 @variable(model, ref[:gen][i]["pmin"] <= pg[i in keys(ref[:gen])] <= ref[:gen][i]["pmax"])
 @variable(model, ref[:gen][i]["qmin"] <= qg[i in keys(ref[:gen])] <= ref[:gen][i]["qmax"])
+G = Dict(i => pg[i] + qg[i]*im for i in keys(ref[:gen]))
 
 @variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
 @variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
+S = Dict(k => p[k] + q[k]*im for k in ref[:arcs])
 
 @objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
 
@@ -49,16 +51,18 @@ for (i,bus) in ref[:bus]
 
     #@constraint(model, bus["vmin"]^2 <= abs2(vr[i] + vi[i]im))
     #@constraint(model, bus["vmax"]^2 >= abs2(vr[i] + vi[i]im))
-    #@constraint(model, bus["vmin"]^2 <= abs(vr[i] + vi[i]im))
-    #@constraint(model, bus["vmax"]^2 >= abs(vr[i] + vi[i]im))
-    @constraint(model, bus["vmin"]^2 <= vr[i]^2 + vi[i]^2)
-    @constraint(model, bus["vmax"]^2 >= vr[i]^2 + vi[i]^2)
+    #@constraint(model, abs2(vr[i] + vi[i]im) >= bus["vmin"]^2)
+    #@constraint(model, abs2(vr[i] + vi[i]im) <= bus["vmax"]^2)
+    #@constraint(model, bus["vmin"]^2 <= vr[i]^2 + vi[i]^2)
+    #@constraint(model, bus["vmax"]^2 >= vr[i]^2 + vi[i]^2)
+    @constraint(model, abs2(V[i]) >= bus["vmin"]^2)
+    @constraint(model, abs2(V[i]) <= bus["vmax"]^2)
 
     @constraint(model,
-        sum(p[a] + q[a]im for a in ref[:bus_arcs][i]) ==
-        sum(pg[g] + qg[g]im for g in ref[:bus_gens][i]) -
+        sum(S[a] for a in ref[:bus_arcs][i]) ==
+        sum(G[g] for g in ref[:bus_gens][i]) -
         sum(load["pd"] + load["qd"]im for load in bus_loads) -
-        sum(shunt["gs"] - shunt["bs"]im for shunt in bus_shunts)*(vr[i]^2 + vi[i]^2)
+        sum(shunt["gs"] - shunt["bs"]im for shunt in bus_shunts)*abs2(V[i])
     )
 end
 
@@ -67,15 +71,21 @@ for (i,branch) in ref[:branch]
     f_idx = (i, branch["f_bus"], branch["t_bus"])
     t_idx = (i, branch["t_bus"], branch["f_bus"])
 
-    p_fr = p[f_idx]                     # p_fr is a reference to the optimization variable p[f_idx]
-    q_fr = q[f_idx]                     # q_fr is a reference to the optimization variable q[f_idx]
-    p_to = p[t_idx]                     # p_to is a reference to the optimization variable p[t_idx]
-    q_to = q[t_idx]                     # q_to is a reference to the optimization variable q[t_idx]
+    # p_fr = p[f_idx]                     # p_fr is a reference to the optimization variable p[f_idx]
+    # q_fr = q[f_idx]                     # q_fr is a reference to the optimization variable q[f_idx]
+    # p_to = p[t_idx]                     # p_to is a reference to the optimization variable p[t_idx]
+    # q_to = q[t_idx]                     # q_to is a reference to the optimization variable q[t_idx]
 
-    vr_fr = vr[branch["f_bus"]]         # vm_fr is a reference to the optimization variable vm on the from side of the branch
-    vr_to = vr[branch["t_bus"]]         # vm_to is a reference to the optimization variable vm on the to side of the branch
-    vi_fr = vi[branch["f_bus"]]         # va_fr is a reference to the optimization variable va on the from side of the branch
-    vi_to = vi[branch["t_bus"]]         # va_fr is a reference to the optimization variable va on the to side of the branch
+    S_fr = S[f_idx]                     # q_fr is a reference to the optimization variable q[f_idx]
+    S_to = S[t_idx]                     # p_to is a reference to the optimization variable p[t_idx]
+
+    # vr_fr = vr[branch["f_bus"]]         # vm_fr is a reference to the optimization variable vm on the from side of the branch
+    # vr_to = vr[branch["t_bus"]]         # vm_to is a reference to the optimization variable vm on the to side of the branch
+    # vi_fr = vi[branch["f_bus"]]         # va_fr is a reference to the optimization variable va on the from side of the branch
+    # vi_to = vi[branch["t_bus"]]         # va_fr is a reference to the optimization variable va on the to side of the branch
+
+    V_fr = V[branch["f_bus"]]         # vm_fr is a reference to the optimization variable vm on the from side of the branch
+    V_to = V[branch["t_bus"]]         # vm_to is a reference to the optimization variable vm on the to side of the branch
 
     g, b = PowerModels.calc_branch_y(branch)
     tr, ti = PowerModels.calc_branch_t(branch)
@@ -89,18 +99,14 @@ for (i,branch) in ref[:branch]
     y_fr = g_fr + b_fr*im
     y_to = g_to + b_to*im
     t = tr + ti*im
-    v_fr = vr_fr + vi_fr*im
-    v_to = vr_to + vi_to*im
+    #v_fr = vr_fr + vi_fr*im
+    #v_to = vr_to + vi_to*im
 
+    W = V_fr*conj(V_to)
 
-    tmp = conj(y+y_fr)/(t*conj(t))*v_fr*conj(v_fr) - conj(y)/t*v_fr*conj(v_to)
-    @constraint(model, p_fr == real(tmp))
-    @constraint(model, q_fr == imag(tmp))
+    @constraint(model, S_fr == conj(y+y_fr)/(t*conj(t))*V_fr*conj(V_fr) - conj(y)/t*V_fr*conj(V_to))
+    @constraint(model, S_to == conj(y+y_to)*V_to*conj(V_to) - conj(y)/conj(t)*conj(V_fr)*V_to)
     #@constraint(model, (p_fr + q_fr*im) == conj(y+y_fr)/(t*conj(t))*v_fr*conj(v_fr) - conj(y)/t*v_fr*conj(v_to))
-
-    tmp = conj(y+y_to)*v_to*conj(v_to) - conj(y)/conj(t)*conj(v_fr)*v_to
-    @constraint(model, p_to == real(tmp))
-    @constraint(model, q_to == imag(tmp))
     #@constraint(model, (p_to + q_to*im) == conj(y+y_to)*v_to*conj(v_to) - conj(y)/conj(t)*conj(v_fr)*v_to)
 
     # From side of the branch flow
@@ -114,14 +120,17 @@ for (i,branch) in ref[:branch]
     # Voltage angle difference limit
     #@constraint(model, angle((vr_fr + vi_fr*im)*conj(vr_to + vi_to*im)) <= branch["angmax"])
     #@constraint(model, angle((vr_fr + vi_fr*im)*conj(vr_to + vi_to*im)) >= branch["angmin"])
-    @constraint(model, (vi_fr*vr_to - vr_fr*vi_to) <= tan(branch["angmax"])*(vr_fr*vr_to + vi_fr*vi_to))
-    @constraint(model, (vi_fr*vr_to - vr_fr*vi_to) >= tan(branch["angmin"])*(vr_fr*vr_to + vi_fr*vi_to))
-
+    #@constraint(model, (vi_fr*vr_to - vr_fr*vi_to) <= tan(branch["angmax"])*(vr_fr*vr_to + vi_fr*vi_to))
+    #@constraint(model, (vi_fr*vr_to - vr_fr*vi_to) >= tan(branch["angmin"])*(vr_fr*vr_to + vi_fr*vi_to))
+    W = V_fr*conj(V_to)
+    @constraint(model, imag(W) <= tan(branch["angmax"])*real(W))
+    @constraint(model, imag(W) >= tan(branch["angmin"])*real(W))
+    
     # Apparent power limit, from side and to side
-    #@constraint(model, abs(p_fr[i] + q_fr[i]im) <= branch["rate_a"])
-    #@constraint(model, abs(p_to[i] + q_to[i]im) <= branch["rate_a"])
-    @constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
-    @constraint(model, p_to^2 + q_to^2 <= branch["rate_a"]^2)
+    #@constraint(model, abs2(p_fr[i] + q_fr[i]im) <= branch["rate_a"]^2)
+    #@constraint(model, abs2(p_to[i] + q_to[i]im) <= branch["rate_a"]^2)
+    @constraint(model, abs2(S_fr) <= branch["rate_a"]^2)
+    @constraint(model, abs2(S_to) <= branch["rate_a"]^2)
 end
 
 model_build_time = time() - time_start
