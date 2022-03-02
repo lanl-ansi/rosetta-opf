@@ -24,7 +24,6 @@ data_load_time = time() - time_start
 
 time_start = time()
 
-model = Model()
 model = Model(Ipopt.Optimizer)
 #set_optimizer_attribute(model, "print_level", 0)
 
