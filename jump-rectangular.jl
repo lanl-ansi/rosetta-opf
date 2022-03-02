@@ -107,6 +107,8 @@ end
 
 model_build_time = time() - time_start
 
+#println("model building done")
+#println(model)
 
 time_start = time()
 
