@@ -1,5 +1,6 @@
 time_start = time()
 
+# NOTE: requires JuMP v0.23.1, ComplexOptInterface v0.1.1
 using PowerModels
 using Ipopt
 using JuMP
@@ -105,7 +106,6 @@ model_build_time = time() - time_start
 
 time_start = time()
 
-println("try to optimize")
 optimize!(model)
 cost = objective_value(model)
 
