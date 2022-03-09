@@ -10,7 +10,7 @@ pkg_load_time = time() - time_start
 time_start = time()
 
 file_name = "data/pglib_opf_case5_pjm.m"
-#file_name = "data/pglib_opf_case118_ieee.m"
+# file_name = "data/pglib_opf_case118_ieee.m"
 
 data = PowerModels.parse_file(file_name)
 PowerModels.standardize_cost_terms!(data, order=2)
@@ -110,6 +110,7 @@ cost = objective_value(model)
 
 solve_time = time() - time_start
 
+nlp_block = MOI.get(model, MOI.NLPBlock())
 
 println("")
 println("\033[1mSummary\033[0m")
@@ -119,4 +120,10 @@ println("   pkg time..: $(pkg_load_time)")
 println("   data time.: $(data_load_time)")
 println("   build time: $(model_build_time)")
 println("   solve time: $(solve_time)")
+println("   callbacks time:")
+println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
+println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
+println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
+println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
+println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
 println("")
