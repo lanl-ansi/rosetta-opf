@@ -282,6 +282,7 @@ for (i,bus) in ref[:ref_buses]
     push!(con_ubs, 0.0)
 end
 
+
 #power_balance_p_con
 for (i,bus) in ref[:bus]
     push!(con_lbs, 0.0)
@@ -340,11 +341,13 @@ for (l,i,j) in ref[:arcs_to]
     push!(con_ubs, branch["rate_a"]^2)
 end
 
-println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
-println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
+
+#println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
+#println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
 
 
 nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_lbs, con_ubs)
+#nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub)
 
 
 model_build_time = time() - time_start
