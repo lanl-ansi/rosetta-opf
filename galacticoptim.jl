@@ -129,16 +129,6 @@ end
 @assert var_idx == length(var_init)+1
 
 
-
-function nlp_sum(values, indexes)
-    if length(indexes) != 0
-        return sum(values[i] for i in indexes)
-    else
-        return 0.0
-    end
-end
-
-
 function opf_objective(x,param)
     cost = 0.0
     for (i,gen) in ref[:gen]
@@ -174,7 +164,7 @@ function opf_constraints(x,param)
     #         sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
     #     )
     power_balance_p_con = [
-       nlp_sum(pg, ref[:bus_gens][i]) -
+       sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
        bus_pd[i] -
        bus_gs[i]*vm[i]^2 -
        sum(p[a] for a in ref[:bus_arcs][i])
@@ -188,7 +178,7 @@ function opf_constraints(x,param)
     #         sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
     #     )
     power_balance_q_con = [
-       nlp_sum(qg, ref[:bus_gens][i]) -
+       sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
        bus_qd[i] +
        bus_bs[i]*vm[i]^2 -
        sum(q[a] for a in ref[:bus_arcs][i])
