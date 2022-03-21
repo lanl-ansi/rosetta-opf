@@ -335,11 +335,11 @@ end
 
 
 println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
-println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
+println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lbs)), $(length(con_ubs))")
 
 
-#optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
-#prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
+optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
+prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
 #optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
 #prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
