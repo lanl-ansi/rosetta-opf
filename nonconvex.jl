@@ -22,7 +22,7 @@ data_load_time = time() - time_start
 
 time_start = time()
 
-model = Model()
+model = Nonconvex.Model()
 
 
 bus_pd = Dict(i => 0.0 for (i,bus) in ref[:bus])
