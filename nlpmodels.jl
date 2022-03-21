@@ -347,6 +347,8 @@ end
 
 
 nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_lbs, con_ubs)
+
+# objective-only solve
 #nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub)
 
 

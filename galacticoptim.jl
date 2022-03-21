@@ -341,6 +341,7 @@ println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lb
 optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
 prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
+# objective-only solve
 #optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
 #prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
 
