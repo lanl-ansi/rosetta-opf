@@ -372,3 +372,8 @@ println("   data time.: $(data_load_time)")
 println("   build time: $(model_build_time)")
 println("   solve time: $(solve_time)")
 println("")
+
+if sum(const_vio) > 1.0
+    error("optimize failed to satify the problem constraints")
+end
+
