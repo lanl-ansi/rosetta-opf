@@ -135,7 +135,7 @@ end
 
 function opf_constraints(x::Vector)
 
-    ### Note this example beaks ForwardDiff ### 
+    ### Note this example beaks ForwardDiff ###
     # con_vals = Float64[]
 
     # for (i,bus) in ref[:ref_buses]
@@ -214,7 +214,7 @@ function opf_constraints(x::Vector)
     power_flow_q_from_con = [
        -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
        (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) - 
+       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
        q[(l,i,j)]
        for (l,i,j) in ref[:arcs_from]
     ]
@@ -270,7 +270,6 @@ for (i,bus) in ref[:ref_buses]
     push!(con_ubs, 0.0)
 end
 
-
 #power_balance_p_con
 for (i,bus) in ref[:bus]
     push!(con_lbs, 0.0)
@@ -282,7 +281,6 @@ for (i,bus) in ref[:bus]
     push!(con_lbs, 0.0)
     push!(con_ubs, 0.0)
 end
-
 
 #power_flow_p_from_con
 for (l,i,j) in ref[:arcs_from]
@@ -329,7 +327,6 @@ for (l,i,j) in ref[:arcs_to]
     push!(con_ubs, branch["rate_a"]^2)
 end
 
-
 #println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
 #println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
 
@@ -338,7 +335,6 @@ nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_l
 
 # objective-only solve
 #nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub)
-
 
 model_build_time = time() - time_start
 

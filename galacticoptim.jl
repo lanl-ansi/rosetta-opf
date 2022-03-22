@@ -1,16 +1,13 @@
 time_start = time()
 
 import PowerModels
-using GalacticOptim
-using ForwardDiff
+using GalacticOptim, ForwardDiff
 using Ipopt
 
 pkg_load_time = time() - time_start
 
 
 time_start = time()
-
-
 
 file_name = "data/pglib_opf_case5_pjm.m"
 #file_name = "data/pglib_opf_case118_ieee.m"
@@ -74,7 +71,6 @@ for (i,branch) in ref[:branch]
     br_b_to[i] = branch["b_to"]
 end
 
-
 var_lookup = Dict{String,Int}()
 
 var_init = Float64[]
@@ -128,8 +124,7 @@ end
 
 @assert var_idx == length(var_init)+1
 
-
-function opf_objective(x,param)
+function opf_objective(x, param)
     cost = 0.0
     for (i,gen) in ref[:gen]
         pg = x[var_lookup["pg_$(i)"]]
@@ -138,7 +133,7 @@ function opf_objective(x,param)
     return cost
 end
 
-function opf_constraints(x,param)
+function opf_constraints(x, param)
 
     va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
     vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -208,7 +203,7 @@ function opf_constraints(x,param)
     power_flow_q_from_con = [
        -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
        (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) - 
+       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
        q[(l,i,j)]
        for (l,i,j) in ref[:arcs_from]
     ]
@@ -255,7 +250,6 @@ function opf_constraints(x,param)
     ]
 end
 
-
 con_lbs = Float64[]
 con_ubs = Float64[]
 
@@ -276,7 +270,6 @@ for (i,bus) in ref[:bus]
     push!(con_lbs, 0.0)
     push!(con_ubs, 0.0)
 end
-
 
 #power_flow_p_from_con
 for (l,i,j) in ref[:arcs_from]
@@ -322,7 +315,6 @@ for (l,i,j) in ref[:arcs_to]
     push!(con_lbs, -Inf)
     push!(con_ubs, branch["rate_a"]^2)
 end
-
 
 println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
 println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lbs)), $(length(con_ubs))")
