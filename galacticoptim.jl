@@ -1,16 +1,16 @@
 time_start = time()
 
-using PowerModels
-using ADNLPModels
-using NLPModelsIpopt
+import PowerModels
+using GalacticOptim, ForwardDiff
+using Ipopt
 
 pkg_load_time = time() - time_start
 
 
 time_start = time()
 
-file_name = "data/pglib_opf_case5_pjm.m"
-#file_name = "data/pglib_opf_case118_ieee.m"
+#file_name = "data/pglib_opf_case5_pjm.m"
+file_name = "data/pglib_opf_case118_ieee.m"
 
 data = PowerModels.parse_file(file_name)
 PowerModels.standardize_cost_terms!(data, order=2)
@@ -124,7 +124,7 @@ end
 
 @assert var_idx == length(var_init)+1
 
-function opf_objective(x::Vector)
+function opf_objective(x, param)
     cost = 0.0
     for (i,gen) in ref[:gen]
         pg = x[var_lookup["pg_$(i)"]]
@@ -133,18 +133,7 @@ function opf_objective(x::Vector)
     return cost
 end
 
-function opf_constraints(x::Vector)
-
-    ### Note this example beaks ForwardDiff ###
-    # con_vals = Float64[]
-
-    # for (i,bus) in ref[:ref_buses]
-    #     #@constraint(model, va[i] == 0)
-    #     va = x[var_lookup["va_$(i)"]]
-    #     push!(con_vals, va)
-    # end
-    ##########
-
+function opf_constraints(x, param)
 
     va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
     vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -327,51 +316,27 @@ for (l,i,j) in ref[:arcs_to]
     push!(con_ubs, branch["rate_a"]^2)
 end
 
-#println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
-#println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
+println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
+println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lbs)), $(length(con_ubs))")
 
 
-nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_lbs, con_ubs)
+optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
+prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
 # objective-only solve
-#nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub)
+#optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
+#prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
 
 model_build_time = time() - time_start
 
 
 time_start = time()
 
-#output = ipopt(nlp, print_level=0)
-output = ipopt(nlp)
-cost = output.objective
+sol = solve(prob, Ipopt.Optimizer())
+cost = sol.minimum
+#println(sol.u) # seems to be the solution vector
 
 solve_time = time() - time_start
-
-
-#println(output.solution)
-
-#=
-# solution debugging
-sol = output.solution
-
-println("bus:")
-for (i,bus) in ref[:bus]
-    vm = sol[var_lookup["vm_$(i)"]]
-    va = sol[var_lookup["va_$(i)"]]
-    println("  $(i) $(vm) $(va) - $(bus_pd[i]) $(bus_qd[i]) $(bus_gs[i]) $(bus_bs[i])")
-end
-
-println("")
-println("gen:")
-for (i,gen) in ref[:gen]
-    pg = sol[var_lookup["pg_$(i)"]]
-    qg = sol[var_lookup["qg_$(i)"]]
-    println("  $(i) $(pg) $(qg)")
-end
-
-# p = Dict((l,i,j) => x[var_lookup["p_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
-# q = Dict((l,i,j) => x[var_lookup["q_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
-=#
 
 println("")
 println("\033[1mSummary\033[0m")
