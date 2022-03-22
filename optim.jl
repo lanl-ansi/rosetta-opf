@@ -339,7 +339,7 @@ time_start = time()
 
 options = Optim.Options(show_trace=true)
 
-# NOTE: had to change initial guess to be an interior point
+# NOTE: had to change initial guess to be an interior point, otherwise getting NaN values
 res = optimize(df, dfc, var_init, IPNewton(), options)
 #res = optimize(df, dfc, var_init, LBFGS(), options) #  StackOverflowError:
 #res = optimize(df, dfc, var_init, NelderMead(), options) #  StackOverflowError:
@@ -348,9 +348,17 @@ display(res)
 sol = res.minimizer
 cost = res.minimum
 
-println(cost)
-println(sol)
-println(opf_constraints(zeros(length(con_lbs)), sol))
+#println(cost)
+#println(sol)
+
+# NOTE: confirmed these constraint violations can be eliminated
+# if a better starting point is used
+sol_eval = opf_constraints(zeros(length(con_lbs)), sol)
+vio_lb = [max(v,0) for v in (con_lbs .- sol_eval)]
+vio_ub = [max(v,0) for v in (sol_eval .- con_ubs)]
+const_vio = vio_lb .+ vio_ub
+#println(const_vio)
+println("total constraint violation: $(sum(const_vio))")
 
 solve_time = time() - time_start
 
