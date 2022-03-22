@@ -91,9 +91,9 @@ version = "0.5.1"
 
 [[deps.ChainRules]]
 deps = ["ChainRulesCore", "Compat", "IrrationalConstants", "LinearAlgebra", "Random", "RealDot", "SparseArrays", "Statistics"]
-git-tree-sha1 = "8aa3851bfd1e5fc9c584afe4fe6ebd3d440deddb"
+git-tree-sha1 = "8b887daa6af5daf705081061e36386190204ac87"
 uuid = "082447d4-558c-5d27-93f4-14fc19e9eca2"
-version = "1.28.0"
+version = "1.28.1"
 
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
@@ -237,9 +237,9 @@ version = "0.3.1"
 
 [[deps.FillArrays]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "Statistics"]
-git-tree-sha1 = "0dbc5b9683245f905993b51d2814202d75b34f1a"
+git-tree-sha1 = "246621d23d1f43e3b9c368bf3b72b2331a27c286"
 uuid = "1a297f60-69ca-5386-bcde-b61e274b549b"
-version = "0.13.1"
+version = "0.13.2"
 
 [[deps.FiniteDiff]]
 deps = ["ArrayInterface", "LinearAlgebra", "Requires", "SparseArrays", "StaticArrays"]
@@ -259,7 +259,9 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[deps.GalacticOptim]]
 deps = ["ArrayInterface", "ConsoleProgressMonitor", "DiffResults", "DocStringExtensions", "Logging", "LoggingExtras", "Pkg", "Printf", "ProgressLogging", "Reexport", "Requires", "SciMLBase", "TerminalLoggers"]
-git-tree-sha1 = "2c7620072a8a07bdc8980107d6e36eb9f63e701c"
+git-tree-sha1 = "a83f7cf177069ec4b8860410a3bcc68a64952d0b"
+repo-rev = "od/moi1"
+repo-url = "git@github.com:odow/GalacticOptim.jl.git"
 uuid = "a75be94c-b780-496d-a8a9-0878b188d577"
 version = "2.4.0"
 
@@ -333,6 +335,7 @@ version = "0.21.3"
 [[deps.JuMP]]
 deps = ["Calculus", "DataStructures", "ForwardDiff", "JSON", "LinearAlgebra", "MathOptInterface", "MutableArithmetics", "NaNMath", "OrderedCollections", "Printf", "Random", "SparseArrays", "SpecialFunctions", "Statistics"]
 git-tree-sha1 = "fe0f87cc077fc6a23c21e469318993caf2947d10"
+pinned = true
 uuid = "4076af6c-e467-56ae-b986-b466b2749572"
 version = "0.22.3"
 
@@ -505,15 +508,15 @@ version = "1.0.2"
 
 [[deps.NonconvexCore]]
 deps = ["ChainRulesCore", "ForwardDiff", "IntervalArithmetic", "JuMP", "LinearAlgebra", "MathOptInterface", "NamedTupleTools", "OrderedCollections", "Parameters", "Random", "Reexport", "Requires", "Setfield", "SparseArrays", "Zygote"]
-git-tree-sha1 = "da081d2e303381c478011dc8f8bf936332a79174"
+git-tree-sha1 = "58374b1bbd3c0c359a593b7396194ffa812a0ffd"
 uuid = "035190e5-69f1-488f-aaab-becca2889735"
-version = "1.0.2"
+version = "1.0.4"
 
 [[deps.NonconvexIpopt]]
 deps = ["Ipopt", "LinearAlgebra", "NonconvexCore", "Parameters", "Reexport", "SparseArrays", "Zygote"]
-git-tree-sha1 = "0424daa75eb116cce7fd83c76c0e80cb259f86c1"
+git-tree-sha1 = "a336dcd9f1c63d5342c52fa8363af0cdb32a3be5"
 uuid = "bf347577-a06d-49ad-a669-8c0e005493b8"
-version = "0.1.3"
+version = "0.1.4"
 
 [[deps.OpenBLAS32_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
@@ -787,9 +790,9 @@ uuid = "83775a58-1f1d-513f-b197-d71354ab007a"
 
 [[deps.Zygote]]
 deps = ["AbstractFFTs", "ChainRules", "ChainRulesCore", "DiffRules", "Distributed", "FillArrays", "ForwardDiff", "IRTools", "InteractiveUtils", "LinearAlgebra", "MacroTools", "NaNMath", "Random", "Requires", "SparseArrays", "SpecialFunctions", "Statistics", "ZygoteRules"]
-git-tree-sha1 = "bf526aa30677f1dde58febc67cb9021aab5eb396"
+git-tree-sha1 = "52adc0a505b6421a8668f13dcdb0c4cb498bd72c"
 uuid = "e88e6eb3-aa80-5325-afca-941959d7151f"
-version = "0.6.36"
+version = "0.6.37"
 
 [[deps.ZygoteRules]]
 deps = ["MacroTools"]
