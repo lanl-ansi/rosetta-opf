@@ -37,8 +37,8 @@ pkg_load_time = time() - time_start
 
 time_start = time()
 
-file_name = "data/pglib_opf_case5_pjm.m"
-# file_name = "data/pglib_opf_case118_ieee.m"
+file_name = "../data/pglib_opf_case5_pjm.m"
+# file_name = "../data/pglib_opf_case118_ieee.m"
 
 #=
     Import data with PowerModels
