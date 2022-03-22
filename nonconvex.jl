@@ -22,7 +22,7 @@ data_load_time = time() - time_start
 
 time_start = time()
 
-model = Nonconvex.Model()
+model = DictModel()
 
 
 bus_pd = Dict(i => 0.0 for (i,bus) in ref[:bus])
@@ -73,53 +73,33 @@ for (i,branch) in ref[:branch]
     br_b_to[i] = branch["b_to"]
 end
 
-
-var_lookup = Dict{String,Int}()
-
-var_idx = 1
 for (i,bus) in ref[:bus]
-    addvar!(model, -Inf, Inf) #va
-    var_lookup["va_$(i)"] = var_idx
-    global var_idx += 1
-
-    addvar!(model, bus["vmin"], bus["vmax"], init=1.0) #vm
-    var_lookup["vm_$(i)"] = var_idx
-    global var_idx += 1
+    addvar!(model, "va_$(i)", -Inf, Inf) #va
+    addvar!(model, "vm_$(i)", bus["vmin"], bus["vmax"], init=1.0) #vm
 end
 
 for (i,gen) in ref[:gen]
-    addvar!(model, gen["pmin"], gen["pmax"]) #pg
-    var_lookup["pg_$(i)"] = var_idx
-    global var_idx += 1
-
-    addvar!(model, gen["qmin"], gen["qmax"]) #qg
-    var_lookup["qg_$(i)"] = var_idx
-    global var_idx += 1
+    addvar!(model, "pg_$(i)", gen["pmin"], gen["pmax"]) #pg
+    addvar!(model, "qg_$(i)", gen["qmin"], gen["qmax"]) #qg
 end
 
 for (l,i,j) in ref[:arcs]
     branch = ref[:branch][l]
-
-    addvar!(model, -branch["rate_a"], branch["rate_a"]) #p
-    var_lookup["p_$(l)_$(i)_$(j)"] = var_idx
-    global var_idx += 1
-
-    addvar!(model, -branch["rate_a"], branch["rate_a"]) #q
-    var_lookup["q_$(l)_$(i)_$(j)"] = var_idx
-    global var_idx += 1
+    addvar!(model, "p_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #p
+    addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #q
 end
 
-@assert var_idx == length(var_lookup)+1
 
 
-function opf_objective(x::Vector)
+function opf_objective(x::OrderedDict)
     cost = 0.0
     for (i,gen) in ref[:gen]
-        pg = x[var_lookup["pg_$(i)"]]
+        pg = x["pg_$(i)"]
         cost += gen["cost"][1]*pg^2 + gen["cost"][2]*pg + gen["cost"][3]
     end
     return cost
 end
+
 
 set_objective!(model, opf_objective)
 
@@ -134,10 +114,6 @@ alg = IpoptAlg()
 options = IpoptOptions(print_level = 0)
 x0 = NonconvexCore.getinit(model)
 #r = optimize(model, alg, x0, options = options)
-
-# Nonconvex v1.0.2
-# ERROR: LoadError: MethodError: no method matching getindex(::Dict{Any, Any})
-# something to do with :Zygote it seems
 r = optimize(model, alg, x0)
 
 solve_time = time() - time_start
