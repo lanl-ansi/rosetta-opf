@@ -1,6 +1,6 @@
 import PowerModels
-using GalacticOptim, ForwardDiff
-using Ipopt
+import GalacticOptim, ForwardDiff
+import Ipopt
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -312,19 +312,19 @@ function solve_opf(file_name)
     println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lbs)), $(length(con_ubs))")
 
 
-    optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
-    prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
+    optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
+    prob = GalacticOptim.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
     # objective-only solve
-    #optprob = OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
-    #prob = OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
+    #optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
+    #prob = GalacticOptim.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
 
     model_build_time = time() - time_model_start
 
 
     time_solve_start = time()
 
-    sol = solve(prob, Ipopt.Optimizer())
+    sol = GalacticOptim.solve(prob, Ipopt.Optimizer())
     cost = sol.minimum
     #println(sol.u) # seems to be the solution vector
     feasible = (sol.retcode == :LOCALLY_SOLVED)

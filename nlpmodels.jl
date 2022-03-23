@@ -1,6 +1,6 @@
-using PowerModels
-using ADNLPModels
-using NLPModelsIpopt
+import PowerModels
+import ADNLPModels
+import NLPModelsIpopt
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -320,14 +320,10 @@ function solve_opf(file_name)
         push!(con_ubs, branch["rate_a"]^2)
     end
 
-    #println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
-    #println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
+    println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
+    println("constraints: $(length(opf_constraints(var_init))), $(length(con_lbs)), $(length(con_ubs))")
 
-
-    nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_lbs, con_ubs)
-
-    # objective-only solve
-    #nlp = ADNLPModel(opf_objective, var_init, var_lb, var_ub)
+    nlp = ADNLPModels.ADNLPModel(opf_objective, var_init, var_lb, var_ub, opf_constraints, con_lbs, con_ubs)
 
     model_build_time = time() - time_model_start
 
@@ -335,7 +331,7 @@ function solve_opf(file_name)
     time_solve_start = time()
 
     #output = ipopt(nlp, print_level=0)
-    output = ipopt(nlp)
+    output = NLPModelsIpopt.ipopt(nlp)
     cost = output.objective
     feasible = (output.primal_feas <= 1e-6)
     #println(output)

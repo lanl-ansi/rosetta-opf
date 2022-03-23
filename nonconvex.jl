@@ -1,5 +1,5 @@
-using PowerModels
-using Nonconvex
+import PowerModels
+import Nonconvex
 Nonconvex.@load Ipopt
 
 function solve_opf(file_name)
@@ -15,7 +15,7 @@ function solve_opf(file_name)
 
     time_model_start = time()
 
-    model = DictModel()
+    model = Nonconvex.DictModel()
 
     bus_pd = Dict(i => 0.0 for (i,bus) in ref[:bus])
     bus_qd = Dict(i => 0.0 for (i,bus) in ref[:bus])
@@ -91,18 +91,16 @@ function solve_opf(file_name)
         return cost
     end
 
-    set_objective!(model, opf_objective)
+    Nonconvex.set_objective!(model, opf_objective)
 
     model_build_time = time() - time_model_start
 
 
     time_solve_start = time()
 
-    alg = IpoptAlg()
-    options = IpoptOptions(print_level = 0)
     x0 = NonconvexCore.getinit(model)
-    #r = optimize(model, alg, x0, options = options)
-    r = optimize(model, alg, x0)
+    #r = optimize(model, IpoptAlg(), x0, options = IpoptOptions(print_level = 0))
+    r = Nonconvex.optimize(model, IpoptAlg(), x0)
     cost = 0.0 # TBD
     feasible = false # TBD
 

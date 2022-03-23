@@ -1,8 +1,8 @@
 # https://github.com/JuliaNLSolvers/Optim.jl
 # https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
 
-using PowerModels
-using Optim
+import PowerModels
+import Optim
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -322,8 +322,8 @@ function solve_opf(file_name)
     println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
     println("constraints: $(length(opf_constraints(zeros(length(con_lbs)), var_init))), $(length(con_lbs)), $(length(con_ubs))")
 
-    df = TwiceDifferentiable(opf_objective, var_init)
-    dfc = TwiceDifferentiableConstraints(opf_constraints, var_lb, var_ub, con_lbs, con_ubs)
+    df = Optim.TwiceDifferentiable(opf_objective, var_init)
+    dfc = Optim.TwiceDifferentiableConstraints(opf_constraints, var_lb, var_ub, con_lbs, con_ubs)
 
     model_build_time = time() - time_model_start
 
@@ -332,9 +332,9 @@ function solve_opf(file_name)
     options = Optim.Options(show_trace=true)
 
     # NOTE: had to change initial guess to be an interior point, otherwise getting NaN values
-    res = optimize(df, dfc, var_init, IPNewton(), options)
-    #res = optimize(df, dfc, var_init, LBFGS(), options) #  StackOverflowError:
-    #res = optimize(df, dfc, var_init, NelderMead(), options) #  StackOverflowError:
+    res = Optim.optimize(df, dfc, var_init, Optim.IPNewton(), options)
+    #res = Optim.optimize(df, dfc, var_init, Optim.LBFGS(), options) #  StackOverflowError:
+    #res = Optim.optimize(df, dfc, var_init, Optim.NelderMead(), options) #  StackOverflowError:
     display(res)
 
     sol = res.minimizer
@@ -343,8 +343,6 @@ function solve_opf(file_name)
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-    #println(cost)
-    #println(sol)
 
     # NOTE: confirmed these constraint violations can be eliminated
     # if a better starting point is used
