@@ -99,7 +99,7 @@ function solve_opf(file_name)
 
     optimize!(model)
     cost = objective_value(model)
-    feasible = termination_status(model) == LOCALLY_SOLVED
+    feasible = (termination_status(model) == LOCALLY_SOLVED)
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
