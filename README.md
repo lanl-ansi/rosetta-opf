@@ -1,4 +1,4 @@
-# Rosetta Optimal Power Flow
+# Rosetta OPF
 
 Various AC OPF Implementations.
 
