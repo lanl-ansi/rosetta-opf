@@ -1,3 +1,9 @@
+###### AC-OPF using JuMP ######
+#
+# implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
+# only the built-in AD library is supported
+#
+
 import PowerModels
 import Ipopt
 import JuMP
@@ -57,15 +63,15 @@ function solve_opf(file_name)
         f_idx = (i, branch["f_bus"], branch["t_bus"])
         t_idx = (i, branch["t_bus"], branch["f_bus"])
 
-        p_fr = p[f_idx]                     # p_fr is a reference to the optimization variable p[f_idx]
-        q_fr = q[f_idx]                     # q_fr is a reference to the optimization variable q[f_idx]
-        p_to = p[t_idx]                     # p_to is a reference to the optimization variable p[t_idx]
-        q_to = q[t_idx]                     # q_to is a reference to the optimization variable q[t_idx]
+        p_fr = p[f_idx]
+        q_fr = q[f_idx]
+        p_to = p[t_idx]
+        q_to = q[t_idx]
 
-        vm_fr = vm[branch["f_bus"]]         # vm_fr is a reference to the optimization variable vm on the from side of the branch
-        vm_to = vm[branch["t_bus"]]         # vm_to is a reference to the optimization variable vm on the to side of the branch
-        va_fr = va[branch["f_bus"]]         # va_fr is a reference to the optimization variable va on the from side of the branch
-        va_to = va[branch["t_bus"]]         # va_fr is a reference to the optimization variable va on the to side of the branch
+        vm_fr = vm[branch["f_bus"]]
+        vm_to = vm[branch["t_bus"]]
+        va_fr = va[branch["f_bus"]]
+        va_to = va[branch["t_bus"]]
 
         g, b = PowerModels.calc_branch_y(branch)
         tr, ti = PowerModels.calc_branch_t(branch)

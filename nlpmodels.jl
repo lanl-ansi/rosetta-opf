@@ -1,3 +1,9 @@
+###### AC-OPF using ADNLPModels ######
+#
+# implementation reference: https://juliasmoothoptimizers.github.io/ADNLPModels.jl/stable/tutorial/
+# other AD libraries can be considered: https://juliasmoothoptimizers.github.io/ADNLPModels.jl/stable/
+#
+
 import PowerModels
 import ADNLPModels
 import NLPModelsIpopt

@@ -1,5 +1,9 @@
-# https://github.com/JuliaNLSolvers/Optim.jl
-# https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
+##### AC-OPF using Optim ######
+#
+# implementation reference: https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
+# currently does not converge to a feasible point, root cause in unclear
+# `debug/optim-debug.jl` can be used to confirm it will converge if given a suitable starting point
+#
 
 import PowerModels
 import Optim

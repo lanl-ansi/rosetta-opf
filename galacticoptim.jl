@@ -1,3 +1,10 @@
+###### AC-OPF using GalacticOptim ######
+#
+# constraint optimization implementation reference: https://github.com/SciML/GalacticOptim.jl/blob/master/test/rosenbrock.jl#L30
+# other AD libraries can be considered: https://galacticoptim.sciml.ai/stable/API/optimization_function/#Defining-Optimization-Functions-Via-AD
+# however ForwardDiff is the only one that is compatible with constraint functions
+#
+
 import PowerModels
 import GalacticOptim, ForwardDiff
 import Ipopt
@@ -315,10 +322,6 @@ function solve_opf(file_name)
     optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
     prob = GalacticOptim.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
-    # objective-only solve
-    #optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff())
-    #prob = GalacticOptim.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub)
-
     model_build_time = time() - time_model_start
 
 
@@ -326,8 +329,8 @@ function solve_opf(file_name)
 
     sol = GalacticOptim.solve(prob, Ipopt.Optimizer())
     cost = sol.minimum
-    #println(sol.u) # seems to be the solution vector
     feasible = (sol.retcode == :LOCALLY_SOLVED)
+    #println(sol.u) # solution vector
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start

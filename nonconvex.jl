@@ -1,3 +1,9 @@
+##### AC-OPF using Nonconvex ######
+#
+# implementation reference: https://julianonconvex.github.io/Nonconvex.jl/stable/problem/
+# currently does not converge due to an upstream issue with the AD backend Zygote: https://github.com/JuliaNonconvex/Nonconvex.jl/issues/130
+#
+
 import PowerModels
 import Nonconvex
 Nonconvex.@load Ipopt
@@ -90,6 +96,10 @@ function solve_opf(file_name)
         end
         return cost
     end
+
+    # TBD once AD is resolved
+    #add_ineq_constraint!(model, f)
+    #add_eq_constraint!(model, f)
 
     Nonconvex.set_objective!(model, opf_objective)
 
