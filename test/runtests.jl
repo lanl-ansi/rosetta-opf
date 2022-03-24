@@ -1,15 +1,24 @@
 using Test
 
 test_case = "../data/pglib_opf_case5_pjm.m"
+test_case_cost = 17551.891
 
 @testset "Rosetta OPF" begin
+
+    @testset "GalacticOptim" begin
+        include("../galacticoptim.jl")
+        result = solve_opf(test_case)
+
+        @test result["feasible"]
+        @test isapprox(result["cost"], test_case_cost)
+    end
 
     @testset "JuMP" begin
         include("../jump.jl")
         result = solve_opf(test_case)
 
         @test result["feasible"]
-        @test isapprox(result["cost"], 17551.891)
+        @test isapprox(result["cost"], test_case_cost)
     end
 
     @testset "NLPModels" begin
@@ -17,15 +26,7 @@ test_case = "../data/pglib_opf_case5_pjm.m"
         result = solve_opf(test_case)
 
         @test result["feasible"]
-        @test isapprox(result["cost"], 17551.891)
-    end
-
-    @testset "GalacticOptim" begin
-        include("../galacticoptim.jl")
-        result = solve_opf(test_case)
-
-        @test result["feasible"]
-        @test isapprox(result["cost"], 17551.891)
+        @test isapprox(result["cost"], test_case_cost)
     end
 
     #=
@@ -35,7 +36,7 @@ test_case = "../data/pglib_opf_case5_pjm.m"
         result = solve_opf(test_case)
 
         @test result["feasible"]
-        @test isapprox(result["cost"], 17551.891)
+        @test isapprox(result["cost"], test_case_cost)
     end
     =#
 
@@ -45,7 +46,7 @@ test_case = "../data/pglib_opf_case5_pjm.m"
         result = solve_opf(test_case)
 
         @test !result["feasible"]
-        #@test isapprox(result["cost"], 17551.891)
+        #@test isapprox(result["cost"], test_case_cost)
     end
 
 end

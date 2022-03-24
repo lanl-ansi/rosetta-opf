@@ -1,4 +1,5 @@
-##### AC-OPF using Optim ######
+#!/usr/bin/env julia
+###### AC-OPF using Optim ######
 #
 # implementation reference: https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
 # currently does not converge to a feasible point, root cause in unclear

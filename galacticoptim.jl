@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 ###### AC-OPF using GalacticOptim ######
 #
 # constraint optimization implementation reference: https://github.com/SciML/GalacticOptim.jl/blob/master/test/rosenbrock.jl#L30

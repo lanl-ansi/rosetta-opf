@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 ###### AC-OPF using ADNLPModels ######
 #
 # implementation reference: https://juliasmoothoptimizers.github.io/ADNLPModels.jl/stable/tutorial/
