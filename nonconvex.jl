@@ -140,5 +140,5 @@ function solve_opf(file_name)
 end
 
 if isinteractive() == false
-    solve_opf("data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
 end
