@@ -1,0 +1,36 @@
+% render with latexit and then export as png, default settings
+% 18.00 pt (std display)
+%  9.00 pt (retina display)
+% \usepackage{amssymb, amsmath, bm}
+\begin{align}
+%
+\mbox{\bf data:} & \nonumber \\ 
+& N, E, E^R, G, D, H, R - \mbox{index sets} \nonumber \\ 
+& \bm {v^l}_i, \bm {v^u}_i \in \mathbb{R} \;\; \forall i \in N - \mbox{voltage limits} \nonumber \\
+& \bm {S^{gl}}_k, \bm {S^{gu}}_k \in \mathbb{C} \;\; \forall k \in G - \mbox{power generation limits} \nonumber \\
+& \bm c_{2k}, \bm c_{1k}, \bm c_{0k} \in \mathbb{R} \;\; \forall k \in G - \mbox{power generation cost parameters} \nonumber \\
+& \bm S^d_k \in \mathbb{C} \;\; \forall k \in D - \mbox{power demands} \nonumber \\
+& \bm Y^s_k \in \mathbb{C} \;\; \forall k \in H - \mbox{shunt properties} \nonumber \\
+& \bm Y_{ij}, \bm Y^c_{ij}, \bm Y^c_{ji}, \bm{T}_{ij} \in \mathbb{C} \;\; \forall (i,j) \in E - \mbox{power line properties} \nonumber \\
+& \bm {s^u}_{ij}, \bm {\theta^{\Delta l}}_{ij}, \bm {\theta^{\Delta u}}_{ij} \in \mathbb{R} \;\; \forall (i,j) \in E - \mbox{power line limits} \nonumber \\
+%
+\mbox{\bf variables: } & \nonumber \\
+& S^g_k \in (\bm {S^{gl}}_k, \bm {S^{gu}}_k) \;\; \forall k\in G - \mbox{power generation ($\mathbb{C}$, rectangular)} \nonumber \\
+& S_{ij} \in (-\bm {s^u}_{ij} - \bm i \;
+ \bm {s^u}_{ij}, \bm {s^u}_{ij} + \bm i \;
+ \bm {s^u}_{ij}) \;\; \forall (i,j) \in E \cup E^R - \mbox{power line flow ($\mathbb{C}$, rectangular)} \nonumber \\
+& V_i = v_i \angle \theta_i \in (\bm {v^l}_i \angle -\infty, \bm {v^u}_i \angle \infty) \;\; \forall i\in N \nonumber - \mbox{voltage ($\mathbb{C}$, polar)} \\
+%
+\mbox{\bf minimize: } & \sum_{k \in G} \bm c_{2k} (\Re(S^g_k))^2 + \bm c_{1k}\Re(S^g_k) + \bm c_{0k} \\
+%
+\mbox{\bf subject to: } & \nonumber \\
+& \angle V_i = 0 \;\; \forall i \in R \\
+%& \bm {S^{gl}}_k \leq S^g_k \leq \bm {S^{gu}}_k \;\; \forall k \in G  \\
+%& \bm {v^l}_i \leq |V_i| \leq \bm {v^u}_i \;\; \forall i \in N \\
+& \sum_{\substack{k \in G_i}} S^g_k - \sum_{\substack{k \in D_i}} \bm S^d_k - \sum_{\substack{k \in H_i}} \bm Y^s_k |V_i|^2 = \sum_{\substack{(i,j)\in E_i \cup E_i^R}} S_{ij} \;\; \forall i \in N \\ 
+& S_{ij} = \frac{\left( \bm Y_{ij} + \bm Y^c_{ij} \right)^*}{|\bm{T}_{ij}|^2} |V_i|^2 - \frac{\bm Y^*_{ij}}{\bm{T}_{ij}} V_i V^*_j \;\; \forall (i,j)\in E \\
+& S_{ji} = \left( \bm Y_{ij} + \bm Y^c_{ji}  \right)^* |V_j|^2 - \frac{\bm Y^*_{ij}}{\bm{T}^*_{ij}} V^*_i V_j \;\; \forall (i,j)\in E \\
+& |S_{ij}|^2 \leq (\bm {s^u}_{ij})^2 \;\; \forall (i,j) \in E \cup E^R \\
+& \bm {\theta^{\Delta l}}_{ij} \leq (\angle V_i) - (\angle V_j) \leq \bm {\theta^{\Delta u}}_{ij} \;\; \forall (i,j) \in E
+%
+\end{align}
