@@ -31,7 +31,7 @@ This work adopts the mathematical model and data format that is used in the IEEE
 
 In this formulation the equations encode the following properties; (1) minimization of generator fuel costs; (2) a voltage phase reference angle; (3) power balance (i.e. energy conservation); (4,5) Ohm's Law for the flow power; (6) power flow limits; and (7) angle difference limits.
 AC-OPF is naturally modeled as continuous nonlinear optimization problem over complex data and variables. However, the implementations in this repository use the projection into real numbers to support the broadest possible set of optimization modeling frameworks.
-In this formulation the complex voltage terms expand into the following expressions, `|Vᵢ|^2 = (vᵢ)^2`, `∠Vᵢ = θᵢ`, `Vᵢ * conj(Vⱼ) = vᵢ*vⱼ*cos(θᵢ - θⱼ) + im*vᵢ*vⱼ*sin(θᵢ - θⱼ)`, which illustrates the source of transcendental functions in the implementation.
+In this formulation the complex voltage terms expand into the following expressions, `|Vᵢ|^2 = (vᵢ)^2`, `∠Vᵢ = θᵢ`, `Vᵢ * conj(Vⱼ) = vᵢ*vⱼ*cos(θᵢ-θⱼ) + im*vᵢ*vⱼ*sin(θᵢ-θⱼ)`, which is the source of the transcendental functions in the implementations.
 
 ## Code Overview
 
