@@ -14,7 +14,7 @@ This project proposes AC-OPF as _proxy-application_ for testing the viability of
 - All decision variables are continuous
 - The objective function may be non-convex
 - The constraints include a system of equality and inequality functions, which can be non-convex (the equality constraints usually cannot be expressed explicitly as a manifold)
-- The constraints can take the form of polynomial and transcendental functions (e.g. `x^2*y^3`, `sin(x)*cos(x)`)
+- The constraints can take the form of polynomial and transcendental functions (e.g. `x^2*y^3`, `sin(x)*cos(y)`)
 - Derivative computations should be handled by the modeling layer (e.g., via Automatic Differentiation). The user lacks the time or expertise to _hard-code_ Jacobian and Hessian oracles.
 
 ### Scope
@@ -23,7 +23,8 @@ At present this project is focused on comparing NLP modeling layers that are ava
 This work is not intended for comparing different nonlinear optimization algorithms, which are often independent of the NLP modeling layer. Consequently, the [Ipopt](https://github.com/jump-dev/Ipopt.jl) solver is used as a standard NLP algorithm whenever it is accessible from the modeling layer.
 
 ## Mathematical and Data Models
-This work adopts the mathematical model and data format that is used in [PGLib-OPF](https://github.com/power-grid-lib/pglib-opf) in the polar voltage form, which is the IEEE PES benchmark library for AC-OPF. The Julia package [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) is used for parsing the problem data files.
+This work adopts the mathematical model and data format that is used in [PGLib-OPF](https://github.com/power-grid-lib/pglib-opf), which is the IEEE PES benchmark library for AC-OPF. The Julia package [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) is used for parsing the problem data files and making standard data transformations.
+
 
 ## Code Overview
 
