@@ -14,7 +14,7 @@ This project proposes AC-OPF as _proxy-application_ for testing the viability of
 - All decision variables are continuous
 - The objective function may be non-convex
 - The constraints include a system of equality and inequality functions, which can be non-convex (the equality constraints usually cannot be expressed explicitly as a manifold)
-- The constraints can take the form of polynomial and transcendental functions (e.g. `x^2*y^3`, `sin(x)*cos(x)`)
+- The constraints can take the form of polynomial and transcendental functions (e.g. `x^2*y^3`, `sin(x)*cos(y)`)
 - Derivative computations should be handled by the modeling layer (e.g., via Automatic Differentiation). The user lacks the time or expertise to _hard-code_ Jacobian and Hessian oracles.
 
 ### Scope
