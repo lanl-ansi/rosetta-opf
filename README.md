@@ -23,7 +23,15 @@ At present this project is focused on comparing NLP modeling layers that are ava
 This work is not intended for comparing different nonlinear optimization algorithms, which are often independent of the NLP modeling layer. Consequently, the [Ipopt](https://github.com/jump-dev/Ipopt.jl) solver is used as a standard NLP algorithm whenever it is accessible from the modeling layer.
 
 ## Mathematical and Data Models
-This work adopts the mathematical model and data format that is used in [PGLib-OPF](https://github.com/power-grid-lib/pglib-opf) in the polar voltage form, which is the IEEE PES benchmark library for AC-OPF. The Julia package [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) is used for parsing the problem data files.
+This work adopts the mathematical model and data format that is used in the IEEE PES benchmark library for AC-OPF, [PGLib-OPF](https://github.com/power-grid-lib/pglib-opf). The Julia package [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) is used for parsing the problem data files and making standard data transformations.
+
+&nbsp;
+![The Mathematical Model of the Optimal Power Flow Problem](MODEL.png?raw=true "AC Optimal Power Flow")
+&nbsp;
+
+In this formulation the equations encode the following properties; (1) minimization of generator fuel costs; (2) a voltage phase reference angle; (3) power balance (i.e. energy conservation); (4,5) Ohm's Law for the flow power; (6) power flow limits; and (7) angle difference limits.
+AC-OPF is naturally modeled as continuous nonlinear optimization problem over complex data and variables. However, the implementations in this repository use the projection into real numbers to support the broadest possible set of optimization modeling frameworks.
+In this formulation the complex voltage terms expand into the following expressions, `|V_i|^2 = (v_i)^2`, `∠V_i = θ_i`, `V_i * conj(V_j) = v_i*v_j*cos(θ_i - θ_j) + im*v_i*v_j*sin(θ_i - θ_j)`, which illustrates the source of transcendental functions in the implementation.
 
 ## Code Overview
 
