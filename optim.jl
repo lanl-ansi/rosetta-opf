@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 ##### AC-OPF using Optim ######
 #
 # implementation reference: https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/

@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 ##### AC-OPF using Nonconvex ######
 #
 # implementation reference: https://julianonconvex.github.io/Nonconvex.jl/stable/problem/

@@ -134,12 +134,6 @@ version = "3.42.0"
 deps = ["Artifacts", "Libdl"]
 uuid = "e66e0078-7015-5450-92f7-15fbd957f2ae"
 
-[[deps.ComplexOptInterface]]
-deps = ["JuMP", "LinearAlgebra", "MathOptInterface", "MutableArithmetics"]
-git-tree-sha1 = "63e25f94ae4f82f516fc37d60dbbc5e681918dfb"
-uuid = "25c3070e-1275-41b5-afef-2f982c87090a"
-version = "0.1.1"
-
 [[deps.ConsoleProgressMonitor]]
 deps = ["Logging", "ProgressMeter"]
 git-tree-sha1 = "3ab7b2136722890b9af903859afcf457fa3059e8"
@@ -253,9 +247,9 @@ uuid = "9fa8497b-333b-5362-9e8d-4d0656e87820"
 
 [[deps.GalacticOptim]]
 deps = ["ArrayInterface", "ConsoleProgressMonitor", "DiffResults", "DocStringExtensions", "Logging", "LoggingExtras", "Pkg", "Printf", "ProgressLogging", "Reexport", "Requires", "SciMLBase", "TerminalLoggers"]
-git-tree-sha1 = "a83f7cf177069ec4b8860410a3bcc68a64952d0b"
-repo-rev = "od/moi1"
-repo-url = "git@github.com:odow/GalacticOptim.jl.git"
+git-tree-sha1 = "ad5815cd8214836785dab0c60860f854850a6f03"
+repo-rev = "master"
+repo-url = "https://github.com/SciML/GalacticOptim.jl.git"
 uuid = "a75be94c-b780-496d-a8a9-0878b188d577"
 version = "2.4.0"
 
@@ -461,12 +455,6 @@ deps = ["Ipopt", "NLPModels", "SolverCore"]
 git-tree-sha1 = "c3c4b3c2e8a725c3ebe272802bc1db1d115eb600"
 uuid = "f4238b75-b362-5c4c-b852-0801c9a21d71"
 version = "0.9.1"
-
-[[deps.NLPModelsJuMP]]
-deps = ["JuMP", "LinearAlgebra", "MathOptInterface", "NLPModels", "Printf", "SparseArrays"]
-git-tree-sha1 = "69048a6a469ef6b17715eb97fe14d4982416fcf7"
-uuid = "792afdf1-32c1-5681-94e0-d7bf7a5df49e"
-version = "0.10.0"
 
 [[deps.NLSolversBase]]
 deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]

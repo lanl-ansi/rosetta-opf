@@ -1,3 +1,4 @@
+#!/usr/bin/env julia
 ###### AC-OPF using JuMP ######
 #
 # implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
