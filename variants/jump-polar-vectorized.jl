@@ -31,7 +31,8 @@ time_start = time()
 
 using LinearAlgebra
 using SparseArrays
-using JuMP, PowerModels
+using JuMP, Ipopt
+using PowerModels
 
 pkg_load_time = time() - time_start
 
