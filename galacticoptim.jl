@@ -316,8 +316,10 @@ function solve_opf(file_name)
         push!(con_ubs, branch["rate_a"]^2)
     end
 
-    println("variables: $(length(var_init)), $(length(var_lb)), $(length(var_ub))")
-    println("constraints: $(length(opf_constraints(var_init, ref))), $(length(con_lbs)), $(length(con_ubs))")
+    model_variables = length(var_init)
+    model_constraints = length(opf_constraints(var_init, ref))
+    println("variables: $(model_variables), $(length(var_lb)), $(length(var_ub))")
+    println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
 
     optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
@@ -339,6 +341,8 @@ function solve_opf(file_name)
     println("")
     println("\033[1mSummary\033[0m")
     println("   case........: $(file_name)")
+    println("   variables...: $(model_variables)")
+    println("   constraints.: $(model_constraints)")
     println("   feasible....: $(feasible)")
     println("   cost........: $(round(Int, cost))")
     println("   total time..: $(total_time)")
@@ -349,6 +353,8 @@ function solve_opf(file_name)
 
     return Dict(
         "case" => file_name,
+        "variables" => model_variables,
+        "constraints" => model_constraints,
         "feasible" => feasible,
         "cost" => cost,
         "time_total" => total_time,
