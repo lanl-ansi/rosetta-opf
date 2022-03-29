@@ -137,7 +137,12 @@ function solve_opf(file_name)
     println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
     println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
-
+    total_callback_time =
+        nlp_block.evaluator.eval_objective_timer +
+        nlp_block.evaluator.eval_objective_gradient_timer +
+        nlp_block.evaluator.eval_constraint_timer +
+        nlp_block.evaluator.eval_constraint_jacobian_timer +
+        nlp_block.evaluator.eval_hessian_lagrangian_timer
     return Dict(
         "case" => file_name,
         "variables" => model_variables,
@@ -148,6 +153,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
+        "time_callbacks" => total_callback_time,
     )
 end
 
