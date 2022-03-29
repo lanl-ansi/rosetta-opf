@@ -39,6 +39,8 @@ result = solve_opf(args["file"])
 data = [
     "DATA",
     result["case"],
+    result["variables"],
+    result["constraints"],
     result["feasible"],
     result["cost"],
     result["time_total"],
