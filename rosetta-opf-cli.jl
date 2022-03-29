@@ -26,6 +26,8 @@ elseif args["solver"] == "nonconvex"
     include("nonconvex.jl")
 elseif args["solver"] == "optim"
     include("optim.jl")
+elseif args["solver"] == "jump-sad"
+    include("variants/jump-symbolic-ad.jl")
 else
     error("unknwon solver type $(args["solver"])")
 end
