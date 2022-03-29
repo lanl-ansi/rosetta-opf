@@ -124,17 +124,20 @@ function solve_opf(file_name)
     end
 
     @assert var_idx == length(var_init)+1
-
+    total_callback_time = 0.0
     function opf_objective(x)
+        start = time()
         cost = 0.0
         for (i,gen) in ref[:gen]
             pg = x[var_lookup["pg_$(i)"]]
             cost += gen["cost"][1]*pg^2 + gen["cost"][2]*pg + gen["cost"][3]
         end
+        total_callback_time += time() - start
         return cost
     end
 
     function opf_constraints(c,x)
+        start = time()
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
 
@@ -248,7 +251,7 @@ function solve_opf(file_name)
             power_flow_mva_from_con...,
             power_flow_mva_to_con...,
         ]
-
+        total_callback_time += time() - start
         return c
     end
 
@@ -377,6 +380,7 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
+    println("      callbacks: $(total_callback_time)")
     println("")
 
 
@@ -390,7 +394,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        "time_callbacks" => NaN,
+        "time_callbacks" => total_callback_time,
     )
 end
 
