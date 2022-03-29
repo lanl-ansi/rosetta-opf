@@ -104,6 +104,10 @@ function solve_opf(file_name)
 
     Nonconvex.set_objective!(model, opf_objective)
 
+    model_variables = -1
+    model_constraints = -1
+
+
     model_build_time = time() - time_model_start
 
 
@@ -121,6 +125,8 @@ function solve_opf(file_name)
     println("")
     println("\033[1mSummary\033[0m")
     println("   case........: $(file_name)")
+    println("   variables...: $(model_variables)")
+    println("   constraints.: $(model_constraints)")
     println("   feasible....: $(feasible)")
     println("   cost........: $(round(Int, cost))")
     println("   total time..: $(total_time)")
@@ -131,6 +137,8 @@ function solve_opf(file_name)
 
     return Dict(
         "case" => file_name,
+        "variables" => model_variables,
+        "constraints" => model_constraints,
         "feasible" => feasible,
         "cost" => cost,
         "time_total" => total_time,

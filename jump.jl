@@ -91,13 +91,18 @@ function solve_opf(file_name)
         JuMP.@NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_fr-va_to)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
 
         # Voltage angle difference limit
-        JuMP.@constraint(model, va_fr - va_to <= branch["angmax"])
-        JuMP.@constraint(model, va_fr - va_to >= branch["angmin"])
+        JuMP.@constraint(model, branch["angmin"] <= va_fr - va_to <= branch["angmax"])
 
         # Apparent power limit, from side and to side
         JuMP.@constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
         JuMP.@constraint(model, p_to^2 + q_to^2 <= branch["rate_a"]^2)
     end
+
+    model_variables = JuMP.num_variables(model)
+    #works but includes variable bounds
+    #sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model))
+    # for consistency with other solvers, only count "Voltage angle difference limit" as one constraint
+    model_constraints = length(ref[:ref_buses]) + 2*length(ref[:bus]) + 7*length(ref[:branch])
 
     model_build_time = time() - time_model_start
 
@@ -116,6 +121,8 @@ function solve_opf(file_name)
     println("")
     println("\033[1mSummary\033[0m")
     println("   case........: $(file_name)")
+    println("   variables...: $(model_variables)")
+    println("   constraints.: $(model_constraints)")
     println("   feasible....: $(feasible)")
     println("   cost........: $(round(Int, cost))")
     println("   total time..: $(total_time)")
@@ -133,6 +140,8 @@ function solve_opf(file_name)
 
     return Dict(
         "case" => file_name,
+        "variables" => model_variables,
+        "constraints" => model_constraints,
         "feasible" => feasible,
         "cost" => cost,
         "time_total" => total_time,
