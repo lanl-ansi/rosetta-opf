@@ -1,6 +1,6 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.7.2"
+julia_version = "1.6.2"
 manifest_format = "2.0"
 
 [[deps.ADNLPModels]]
@@ -20,12 +20,6 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "6252039f98492252f9e47c312c8ffda0e3b9e78d"
 uuid = "ae81ac8f-d209-56e5-92de-9978fef736f9"
 version = "0.1.3+0"
-
-[[deps.AbstractAlgebra]]
-deps = ["GroupsCore", "InteractiveUtils", "LinearAlgebra", "MacroTools", "Markdown", "Random", "RandomExtensions", "SparseArrays", "Test"]
-git-tree-sha1 = "831375b2bf4c71d53d50b64e3fb2f11ba35b5c62"
-uuid = "c3fe647b-3220-5bb0-a1ea-a7954cac585d"
-version = "0.25.1"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -346,18 +340,6 @@ repo-url = "https://github.com/SciML/GalacticOptim.jl.git"
 uuid = "a75be94c-b780-496d-a8a9-0878b188d577"
 version = "2.4.0"
 
-[[deps.Groebner]]
-deps = ["AbstractAlgebra", "Combinatorics", "Logging", "MultivariatePolynomials", "Primes", "Random"]
-git-tree-sha1 = "585db15083afd8b105d611af8723fe5b245fc928"
-uuid = "0b43b601-686d-58a3-8a1c-6623616c7cd4"
-version = "0.2.1"
-
-[[deps.GroupsCore]]
-deps = ["Markdown", "Random"]
-git-tree-sha1 = "9e1a5e9f3b81ad6a5c613d181664a0efc6fe6dd7"
-uuid = "d5909c97-4eac-4ecc-a3dc-fdd0858a4120"
-version = "0.4.0"
-
 [[deps.HypergeometricFunctions]]
 deps = ["DualNumbers", "LinearAlgebra", "SpecialFunctions", "Test"]
 git-tree-sha1 = "65e4589030ef3c44d3b90bdc5aac462b4bb05567"
@@ -377,9 +359,9 @@ version = "0.1.1"
 
 [[deps.InfrastructureModels]]
 deps = ["JuMP", "Memento"]
-git-tree-sha1 = "0cc6686110dc42aa24e3ca795402e45ab6394425"
+git-tree-sha1 = "0c9ec48199cb90a6d1b5c6bdc0f9a15ce8a108b2"
 uuid = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
-version = "0.7.3"
+version = "0.7.4"
 
 [[deps.InitialValues]]
 git-tree-sha1 = "4da0f88e9a39111c2fa3add390ab15f3a44f3ca3"
@@ -503,7 +485,7 @@ uuid = "d3d80556-e9d4-5f37-9878-2ab0fcc64255"
 version = "7.1.1"
 
 [[deps.LinearAlgebra]]
-deps = ["Libdl", "libblastrampoline_jll"]
+deps = ["Libdl"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LinearOperators]]
@@ -551,9 +533,9 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 
 [[deps.MathOptInterface]]
 deps = ["BenchmarkTools", "CodecBzip2", "CodecZlib", "JSON", "LinearAlgebra", "MutableArithmetics", "OrderedCollections", "Printf", "SparseArrays", "Test", "Unicode"]
-git-tree-sha1 = "a62df301482a41cb7b1db095a4e6949ba7eb3349"
+git-tree-sha1 = "09be99195f42c601f55317bd89f3c6bbaec227dc"
 uuid = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
-version = "1.1.0"
+version = "1.1.1"
 
 [[deps.MbedTLS_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -658,13 +640,9 @@ version = "0.1.4"
 
 [[deps.OpenBLAS32_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
-git-tree-sha1 = "9c6c2ed4b7acd2137b878eb96c68e63b76199d0f"
+git-tree-sha1 = "ba4a8f683303c9082e84afba96f25af3c7fb2436"
 uuid = "656ef2d0-ae68-5445-9ca0-591084a874a2"
-version = "0.3.17+0"
-
-[[deps.OpenBLAS_jll]]
-deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
-uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
+version = "0.3.12+1"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]
@@ -717,20 +695,15 @@ version = "0.2.4"
 
 [[deps.PowerModels]]
 deps = ["InfrastructureModels", "JSON", "JuMP", "LinearAlgebra", "Memento", "NLsolve", "SparseArrays"]
-git-tree-sha1 = "3766950ccc012e9a568f16e681f4c6b8afc64c41"
+git-tree-sha1 = "c680b66275025a7f3265ee356c95a9b644483150"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
-version = "0.19.4"
+version = "0.19.5"
 
 [[deps.Preferences]]
 deps = ["TOML"]
 git-tree-sha1 = "d3538e7f8a790dc8903519090857ef8e1283eecd"
 uuid = "21216c6a-2e73-6563-6e65-726566657250"
 version = "1.2.5"
-
-[[deps.Primes]]
-git-tree-sha1 = "984a3ee07d47d401e0b823b7d30546792439070a"
-uuid = "27ebfcd6-29c5-5fa9-bf4b-fb8fc14df3ae"
-version = "0.5.1"
 
 [[deps.Printf]]
 deps = ["Unicode"]
@@ -763,14 +736,8 @@ deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
 [[deps.Random]]
-deps = ["SHA", "Serialization"]
+deps = ["Serialization"]
 uuid = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
-
-[[deps.RandomExtensions]]
-deps = ["Random", "SparseArrays"]
-git-tree-sha1 = "062986376ce6d394b23d5d90f01d81426113a3c9"
-uuid = "fb686558-2515-59ef-acaa-46db3789a887"
-version = "0.4.3"
 
 [[deps.RealDot]]
 deps = ["LinearAlgebra"]
@@ -895,9 +862,9 @@ version = "0.6.0"
 
 [[deps.StaticArrays]]
 deps = ["LinearAlgebra", "Random", "Statistics"]
-git-tree-sha1 = "6976fab022fea2ffea3d945159317556e5dad87c"
+git-tree-sha1 = "4f6ec5d99a28e1a749559ef7dd518663c5eca3d5"
 uuid = "90137ffa-7385-5640-81b9-e52037218182"
-version = "1.4.2"
+version = "1.4.3"
 
 [[deps.Statistics]]
 deps = ["LinearAlgebra", "SparseArrays"]
@@ -926,8 +893,8 @@ deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SymbolicAD]]
-deps = ["MathOptInterface", "SparseArrays", "Symbolics"]
-git-tree-sha1 = "63121ddf1e802dbdb22b2410a820a16f3d8413b5"
+deps = ["JuMP", "MathOptInterface", "SparseArrays", "Symbolics"]
+git-tree-sha1 = "94ca6692a15935bf9fb4c9fd7ca83bf4f45f8d05"
 repo-rev = "master"
 repo-url = "https://github.com/odow/SymbolicAD.jl"
 uuid = "309f4015-3481-4d63-a8f9-aeb13adfe8eb"
@@ -940,10 +907,10 @@ uuid = "d1185830-fcd6-423d-90d6-eec64667417b"
 version = "0.19.7"
 
 [[deps.Symbolics]]
-deps = ["ArrayInterface", "ConstructionBase", "DataStructures", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "Groebner", "IfElse", "Latexify", "Libdl", "LinearAlgebra", "MacroTools", "Metatheory", "NaNMath", "RecipesBase", "Reexport", "Requires", "RuntimeGeneratedFunctions", "SciMLBase", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicUtils", "TermInterface", "TreeViews"]
-git-tree-sha1 = "759d6102719068d95acae0b5480c157fa278ca82"
+deps = ["ConstructionBase", "DataStructures", "DiffRules", "Distributions", "DocStringExtensions", "DomainSets", "IfElse", "Latexify", "Libdl", "LinearAlgebra", "MacroTools", "Metatheory", "NaNMath", "RecipesBase", "Reexport", "Requires", "RuntimeGeneratedFunctions", "SciMLBase", "Setfield", "SparseArrays", "SpecialFunctions", "StaticArrays", "SymbolicUtils", "TermInterface", "TreeViews"]
+git-tree-sha1 = "9230e74d316442051e8a6c9c9af89a04be1e6106"
 uuid = "0c5d862f-8b57-4792-8d23-62f2024744c7"
-version = "4.3.1"
+version = "4.2.2"
 
 [[deps.TOML]]
 deps = ["Dates"]
@@ -1037,10 +1004,6 @@ deps = ["MacroTools"]
 git-tree-sha1 = "8c1a8e4dfacb1fd631745552c8db35d0deb09ea0"
 uuid = "700de1a5-db45-46bc-99cf-38207098b444"
 version = "0.2.2"
-
-[[deps.libblastrampoline_jll]]
-deps = ["Artifacts", "Libdl", "OpenBLAS_jll"]
-uuid = "8e850b90-86db-534c-a0d3-1478176c7d93"
 
 [[deps.nghttp2_jll]]
 deps = ["Artifacts", "Libdl"]

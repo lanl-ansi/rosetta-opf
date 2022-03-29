@@ -23,7 +23,7 @@ function solve_opf(file_name)
 
     time_model_start = time()
 
-    model = JuMP.Model(() -> SymbolicAD.Optimizer(Ipopt.Optimizer))
+    model = JuMP.Model(Ipopt.Optimizer)
     #JuMP.set_optimizer_attribute(model, "print_level", 0)
 
     JuMP.@variable(model, va[i in keys(ref[:bus])])
@@ -104,7 +104,7 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
-
+    JuMP.set_optimize_hook(model, SymbolicAD.optimize_hook)
     JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
