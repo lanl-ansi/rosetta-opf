@@ -100,10 +100,9 @@ function solve_opf(file_name)
     end
 
     model_variables = JuMP.num_variables(model)
-    #works but includes variable bounds
-    #sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model))
-    # for consistency with other solvers, only count "Voltage angle difference limit" as one constraint
-    model_constraints = length(ref[:ref_buses]) + 2*length(ref[:bus]) + 7*length(ref[:branch])
+    # for consistency with other solvers, skip the variable bounds in the constraint count
+    non_nl_constraints = sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model) if ft != JuMP.VariableRef)
+    model_constraints = JuMP.num_nonlinear_constraints(model) + non_nl_constraints
 
     model_build_time = time() - time_model_start
 
