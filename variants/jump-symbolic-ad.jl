@@ -92,8 +92,7 @@ function solve_opf(file_name)
         JuMP.@NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_fr-va_to)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
 
         # Voltage angle difference limit
-        JuMP.@constraint(model, va_fr - va_to <= branch["angmax"])
-        JuMP.@constraint(model, va_fr - va_to >= branch["angmin"])
+        JuMP.@constraint(model, branch["angmin"] <= va_fr - va_to <= branch["angmax"])
 
         # Apparent power limit, from side and to side
         JuMP.@constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
