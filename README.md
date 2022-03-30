@@ -36,7 +36,7 @@ In this formulation the complex voltage terms expand into the following expressi
 ## Code Overview
 
 ### AC-OPF Implementations
-Each of these files is design to be _stand-alone_ and can be tested with minimal package dependencies.
+Each of these files is designed to be _stand-alone_ and can be tested with minimal package dependencies.
 Consequently, there is some code replication between implementations.
 - `galacticoptim.jl`: implementation using [GalacticOptim](https://github.com/SciML/GalacticOptim.jl)
 - `jump.jl`: implementation using [JuMP](https://github.com/jump-dev/JuMP.jl)
