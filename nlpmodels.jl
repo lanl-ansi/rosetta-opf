@@ -364,7 +364,7 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
-    println("      callbacks: $(total_callback_time)")
+    # println("      callbacks: $(total_callback_time)")
     println("")
 
     return Dict(
@@ -377,7 +377,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        "time_callbacks" => total_callback_time,
+        "time_callbacks" => NaN,
     )
 end
 
