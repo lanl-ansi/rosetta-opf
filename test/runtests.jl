@@ -4,7 +4,7 @@ test_case = "../data/pglib_opf_case5_pjm.m"
 test_case_cost = 17551.891
 
 function check_result_keys(result::Dict)
-    for k in ["case", "variables", "constraints", "feasible", "cost", "time_total", "time_data", "time_build", "time_solve"]
+    for k in ["case", "variables", "constraints", "feasible", "cost", "time_total", "time_data", "time_build", "time_solve", "time_callbacks"]
         if !haskey(result, k)
             @warn "result dict missing key \"$(k)\""
             return false

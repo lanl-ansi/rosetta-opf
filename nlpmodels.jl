@@ -123,18 +123,20 @@ function solve_opf(file_name)
     end
 
     @assert var_idx == length(var_init)+1
-
+    total_callback_time = 0.0
     function opf_objective(x::Vector)
+        start = time()
         cost = 0.0
         for (i,gen) in ref[:gen]
             pg = x[var_lookup["pg_$(i)"]]
             cost += gen["cost"][1]*pg^2 + gen["cost"][2]*pg + gen["cost"][3]
         end
+        total_callback_time += time() - start
         return cost
     end
 
     function opf_constraints(x::Vector)
-
+        start = time()
         ### Note this example beaks ForwardDiff ###
         # con_vals = Float64[]
 
@@ -247,7 +249,7 @@ function solve_opf(file_name)
            for (l,i,j) in ref[:arcs_to]
         ]
 
-        return [
+        ret = [
             va_con...,
             power_balance_p_con...,
             power_balance_q_con...,
@@ -259,6 +261,8 @@ function solve_opf(file_name)
             power_flow_mva_from_con...,
             power_flow_mva_to_con...,
         ]
+        total_callback_time += time() - start
+        return ret
     end
 
     con_lbs = Float64[]
@@ -360,6 +364,7 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
+    # println("      callbacks: $(total_callback_time)")
     println("")
 
     return Dict(
@@ -372,6 +377,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
+        "time_callbacks" => NaN,
     )
 end
 
