@@ -47,6 +47,7 @@ data = [
     result["time_data"],
     result["time_build"],
     result["time_solve"],
+    get(result, "time_callbacks", 0)
 ]
 println(join(data, ", "))
 
