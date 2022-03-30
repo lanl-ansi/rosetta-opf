@@ -243,9 +243,10 @@ uuid = "7c1d4256-1411-5781-91ec-d7bc3513ac07"
 version = "0.4.5"
 
 [[deps.EllipsisNotation]]
-git-tree-sha1 = "18ee049accec8763be17a933737c1dd0fdf8673a"
+deps = ["ArrayInterface"]
+git-tree-sha1 = "d064b0340db45d48893e7604ec95e7a2dc9da904"
 uuid = "da5c29d0-fa7d-589e-88eb-ea29b0a81949"
-version = "1.0.0"
+version = "1.5.0"
 
 [[deps.ExprTools]]
 git-tree-sha1 = "56559bbef6ca5ea0c0818fa5c90320398a6fbf8d"
@@ -750,7 +751,7 @@ uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
 [[deps.SymbolicAD]]
 deps = ["JuMP", "MathOptInterface", "SparseArrays", "Symbolics"]
-git-tree-sha1 = "b289f95112ed1749534fc99d59d00cf9975fdeba"
+git-tree-sha1 = "a6637b8f3abc9b81d1d6e35ca2e22198434df53c"
 repo-rev = "master"
 repo-url = "https://github.com/odow/SymbolicAD.jl"
 uuid = "309f4015-3481-4d63-a8f9-aeb13adfe8eb"
