@@ -88,15 +88,15 @@ function solve_opf(file_name)
         addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #q
     end
 
-    total_callback_time = 0.0
+    #total_callback_time = 0.0
     function opf_objective(x::OrderedDict)
-        start = time()
+        #start = time()
         cost = 0.0
         for (i,gen) in ref[:gen]
             pg = x["pg_$(i)"]
             cost += gen["cost"][1]*pg^2 + gen["cost"][2]*pg + gen["cost"][3]
         end
-        total_callback_time += time() - start
+        #total_callback_time += time() - start
         return cost
     end
 
@@ -148,7 +148,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        "time_callbacks" => NaN,
+        #"time_callbacks" => TBD,
     )
 end
 
