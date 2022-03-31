@@ -108,6 +108,7 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
+
     JuMP.set_optimize_hook(model, SymbolicAD.optimize_hook)
     JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
@@ -145,7 +146,7 @@ function solve_opf(file_name)
     println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
     println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
-    
+
     return Dict(
         "case" => file_name,
         "variables" => model_variables,

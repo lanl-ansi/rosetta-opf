@@ -117,6 +117,7 @@ function solve_opf(file_name)
     total_time = time() - time_data_start
 
     nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
+    @assert nlp_block.evaluator isa JuMP.NLPEvaluator
     total_callback_time =
         nlp_block.evaluator.eval_objective_timer +
         nlp_block.evaluator.eval_objective_gradient_timer +

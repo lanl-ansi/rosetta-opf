@@ -4,7 +4,6 @@
 # implementation reference: https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
 # currently does not converge to a feasible point, root cause in unclear
 # `debug/optim-debug.jl` can be used to confirm it will converge if given a suitable starting point
-#
 
 import PowerModels
 import Optim
@@ -92,15 +91,13 @@ function solve_opf(file_name)
     end
 
     for (i,gen) in ref[:gen]
-        #push!(var_init, 0.0) #pg
-        push!(var_init, (gen["pmax"]+gen["pmin"])/2) # non-standard start
+        push!(var_init, 0.0) #pg
         push!(var_lb, gen["pmin"])
         push!(var_ub, gen["pmax"])
         var_lookup["pg_$(i)"] = var_idx
         var_idx += 1
 
-        #push!(var_init, 0.0) #qg
-        push!(var_init, (gen["qmax"]+gen["qmin"])/2) # non-standard start
+        push!(var_init, 0.0) #qg
         push!(var_lb, gen["qmin"])
         push!(var_ub, gen["qmax"])
         var_lookup["qg_$(i)"] = var_idx
@@ -124,6 +121,7 @@ function solve_opf(file_name)
     end
 
     @assert var_idx == length(var_init)+1
+
     #total_callback_time = 0.0
     function opf_objective(x)
         #start = time()
@@ -136,7 +134,7 @@ function solve_opf(file_name)
         return cost
     end
 
-    function opf_constraints(c,x)
+    function opf_constraints(ret, x)
         #start = time()
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -239,7 +237,7 @@ function solve_opf(file_name)
            for (l,i,j) in ref[:arcs_to]
         ]
 
-        c .= [
+        ret .= [
             va_con...,
             power_balance_p_con...,
             power_balance_q_con...,
@@ -252,7 +250,7 @@ function solve_opf(file_name)
             power_flow_mva_to_con...,
         ]
         #total_callback_time += time() - start
-        return c
+        return ret
     end
 
     con_lbs = Float64[]
@@ -269,18 +267,13 @@ function solve_opf(file_name)
     for (i,bus) in ref[:bus]
         push!(con_lbs, 0.0)
         push!(con_ubs, 0.0)
-        #push!(con_lbs, -Inf)
-        #push!(con_ubs, Inf)
     end
 
     #power_balance_q_con
     for (i,bus) in ref[:bus]
         push!(con_lbs, 0.0)
         push!(con_ubs, 0.0)
-        #push!(con_lbs, -Inf)
-        #push!(con_ubs, Inf)
     end
-
 
     #power_flow_p_from_con
     for (l,i,j) in ref[:arcs_from]
@@ -332,6 +325,14 @@ function solve_opf(file_name)
     println("variables: $(model_variables), $(length(var_lb)), $(length(var_ub))")
     println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
+    # NOTE: had to change initial guess to be an interior point, otherwise
+    # getting NaN values
+    for i in 1:length(var_init)
+        if var_init[i] == var_lb[i]
+            var_init[i] = 0.5 * (var_lb[i] + var_ub[i])
+        end
+    end
+
     df = Optim.TwiceDifferentiable(opf_objective, var_init)
     dfc = Optim.TwiceDifferentiableConstraints(opf_constraints, var_lb, var_ub, con_lbs, con_ubs)
 
@@ -340,31 +341,24 @@ function solve_opf(file_name)
     time_solve_start = time()
 
     options = Optim.Options(show_trace=true)
-
-    # NOTE: had to change initial guess to be an interior point, otherwise getting NaN values
+    # Optim.LBFGS() and Optim.NelderMead() caused StackOverflowError
     res = Optim.optimize(df, dfc, var_init, Optim.IPNewton(), options)
-    #res = Optim.optimize(df, dfc, var_init, Optim.LBFGS(), options) #  StackOverflowError:
-    #res = Optim.optimize(df, dfc, var_init, Optim.NelderMead(), options) #  StackOverflowError:
     display(res)
-
     sol = res.minimizer
     cost = res.minimum
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-
-    # NOTE: confirmed these constraint violations can be eliminated
-    # if a better starting point is used
+    # NOTE: confirmed these constraint violations can be eliminated if a better
+    # starting point is used.
     sol_eval = opf_constraints(zeros(length(con_lbs)), sol)
     vio_lb = [max(v,0) for v in (con_lbs .- sol_eval)]
     vio_ub = [max(v,0) for v in (sol_eval .- con_ubs)]
     const_vio = vio_lb .+ vio_ub
-    #println(const_vio)
     println("total constraint violation: $(sum(const_vio))")
     constraint_tol = 1e-6
     feasible = (sum(const_vio) <= constraint_tol)
-
     if !feasible
         @warn "Optim optimize failed to satify the problem constraints"
     end

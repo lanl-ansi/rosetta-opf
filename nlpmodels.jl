@@ -6,8 +6,7 @@
 #
 
 import PowerModels
-import ADNLPModels
-import NLPModelsIpopt
+import ADNLPModels, NLPModelsIpopt
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -123,6 +122,7 @@ function solve_opf(file_name)
     end
 
     @assert var_idx == length(var_init)+1
+
     #total_callback_time = 0.0
     function opf_objective(x::Vector)
         #start = time()
@@ -137,17 +137,6 @@ function solve_opf(file_name)
 
     function opf_constraints(x::Vector)
         #start = time()
-        ### Note this example beaks ForwardDiff ###
-        # con_vals = Float64[]
-
-        # for (i,bus) in ref[:ref_buses]
-        #     #@constraint(model, va[i] == 0)
-        #     va = x[var_lookup["va_$(i)"]]
-        #     push!(con_vals, va)
-        # end
-        ##########
-
-
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
 
@@ -343,15 +332,12 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    #output = ipopt(nlp, print_level=0)
-    output = NLPModelsIpopt.ipopt(nlp)
-    cost = output.objective
-    feasible = (output.primal_feas <= 1e-6)
-    #println(output)
+    sol = NLPModelsIpopt.ipopt(nlp)
+    cost = sol.objective
+    feasible = (sol.primal_feas <= 1e-6)
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
-
 
     println("")
     println("\033[1mSummary\033[0m")

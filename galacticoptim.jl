@@ -4,11 +4,9 @@
 # constraint optimization implementation reference: https://github.com/SciML/GalacticOptim.jl/blob/master/test/rosenbrock.jl#L30
 # other AD libraries can be considered: https://galacticoptim.sciml.ai/stable/API/optimization_function/#Defining-Optimization-Functions-Via-AD
 # however ForwardDiff is the only one that is compatible with constraint functions
-#
 
 import PowerModels
-import GalacticOptim, ForwardDiff
-import Ipopt
+import GalacticOptim, ForwardDiff, Ipopt
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -238,6 +236,7 @@ function solve_opf(file_name)
            p[(l,i,j)]^2 + q[(l,i,j)]^2
            for (l,i,j) in ref[:arcs_to]
         ]
+
         ret = [
             va_con...,
             power_balance_p_con...,
@@ -331,13 +330,11 @@ function solve_opf(file_name)
 
     model_build_time = time() - time_model_start
 
-
     time_solve_start = time()
 
     sol = GalacticOptim.solve(prob, Ipopt.Optimizer())
     cost = sol.minimum
     feasible = (sol.retcode == :LOCALLY_SOLVED)
-    #println(sol.u) # solution vector
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
