@@ -108,6 +108,7 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
+    JuMP.set_optimizer_attribute(model, "linear_solver", "ma27")
     JuMP.set_optimize_hook(model, SymbolicAD.optimize_hook)
     JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
