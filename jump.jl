@@ -123,6 +123,7 @@ function solve_opf(file_name)
         nlp_block.evaluator.eval_constraint_timer +
         nlp_block.evaluator.eval_constraint_jacobian_timer +
         nlp_block.evaluator.eval_hessian_lagrangian_timer
+
     println("")
     println("\033[1mSummary\033[0m")
     println("   case........: $(file_name)")
@@ -143,6 +144,7 @@ function solve_opf(file_name)
     println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
     println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
+
     return Dict(
         "case" => file_name,
         "variables" => model_variables,

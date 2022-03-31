@@ -115,6 +115,7 @@ function solve_opf(file_name)
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
+
     nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
     @assert nlp_block.evaluator isa SymbolicAD._NonlinearOracle
     total_callback_time =
