@@ -8,6 +8,17 @@
 import PowerModels
 import GalacticOptim, ForwardDiff, Ipopt
 
+struct Lookup{X,F}
+    f::F
+    var_lookup::Dict{String,Int}
+    x::X
+    function Lookup(f::F, var_lookup, x::X) where {F,X}
+        new{X,F}(f, var_lookup, x)
+    end
+end
+
+Base.getindex(l::Lookup, arg) = l.x[l.var_lookup[l.f(arg)]]
+
 function solve_opf(file_name)
     time_data_start = time()
 
@@ -134,24 +145,43 @@ function solve_opf(file_name)
         return cost
     end
 
-    function opf_constraints(x, param)
+    _va_lookup(i) = "va_$(i)"
+    _vm_lookup(i) = "vm_$(i)"
+    _pg_lookup(i) = "pg_$(i)"
+    _qg_lookup(i) = "qg_$(i)"
+    _p_lookup((l, i, j)) = "p_$(l)_$(i)_$(j)"
+    _q_lookup((l, i, j)) = "q_$(l)_$(i)_$(j)"
+    function opf_constraints(x::AbstractVector{T}, param) where {T}
         #start = time()
-        va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
-        vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
+        # va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
+        # vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
+        va = Lookup(_va_lookup, var_lookup, x)
+        vm = Lookup(_vm_lookup, var_lookup, x)
 
-        pg = Dict(i => x[var_lookup["pg_$(i)"]] for (i,gen) in ref[:gen])
-        qg = Dict(i => x[var_lookup["qg_$(i)"]] for (i,gen) in ref[:gen])
+        # pg = Dict(i => x[var_lookup["pg_$(i)"]] for (i,gen) in ref[:gen])
+        # qg = Dict(i => x[var_lookup["qg_$(i)"]] for (i,gen) in ref[:gen])
+        pg = Lookup(_pg_lookup, var_lookup, x)
+        qg = Lookup(_qg_lookup, var_lookup, x)
 
-        p = Dict((l,i,j) => x[var_lookup["p_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
-        q = Dict((l,i,j) => x[var_lookup["q_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
+        # p = Dict((l,i,j) => x[var_lookup["p_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
+        # q = Dict((l,i,j) => x[var_lookup["q_$(l)_$(i)_$(j)"]] for (l,i,j) in ref[:arcs])
+        p = Lookup(_p_lookup, var_lookup, x)
+        q = Lookup(_q_lookup, var_lookup, x)
 
         vm_fr = Dict(l => vm[branch["f_bus"]] for (l,branch) in ref[:branch])
         vm_to = Dict(l => vm[branch["t_bus"]] for (l,branch) in ref[:branch])
         va_fr = Dict(l => va[branch["f_bus"]] for (l,branch) in ref[:branch])
         va_to = Dict(l => va[branch["t_bus"]] for (l,branch) in ref[:branch])
+        # vm_fr = Lookup(l -> "vm_$(ref[:branch][l]["f_bus"])", var_lookup, x)
+        # vm_to = Lookup(l -> "vm_$(ref[:branch][l]["t_bus"])", var_lookup, x)
+        # va_fr = Lookup(l -> "va_$(ref[:branch][l]["f_bus"])", var_lookup, x)
+        # va_to = Lookup(l -> "va_$(ref[:branch][l]["t_bus"])", var_lookup, x)
 
-
-        va_con = [va[i] for (i,bus) in ref[:ref_buses]]
+        # va_con = [va[i] for (i,bus) in ref[:ref_buses]]
+        constraints = T[]
+        for (i,bus) in ref[:ref_buses]
+            push!(constraints, va[i])
+        end
 
         #     @constraint(model,
         #         sum(p[a] for a in ref[:bus_arcs][i]) ==
@@ -159,13 +189,21 @@ function solve_opf(file_name)
         #         sum(load["pd"] for load in bus_loads) -
         #         sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
         #     )
-        power_balance_p_con = [
-           sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
-           bus_pd[i] -
-           bus_gs[i]*vm[i]^2 -
-           sum(p[a] for a in ref[:bus_arcs][i])
-           for (i,bus) in ref[:bus]
-        ]
+        # power_balance_p_con = [
+        #    sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
+        #    bus_pd[i] -
+        #    bus_gs[i]*vm[i]^2 -
+        #    sum(p[a] for a in ref[:bus_arcs][i])
+        #    for (i,bus) in ref[:bus]
+        # ]
+        for (i, bus) in ref[:bus]
+            push!(constraints,
+                sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
+                bus_pd[i] -
+                bus_gs[i]*vm[i]^2 -
+                sum(p[a] for a in ref[:bus_arcs][i])
+            )
+        end
 
         #     @constraint(model,
         #         sum(q[a] for a in ref[:bus_arcs][i]) ==
@@ -173,84 +211,133 @@ function solve_opf(file_name)
         #         sum(load["qd"] for load in bus_loads) +
         #         sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
         #     )
-        power_balance_q_con = [
-           sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
-           bus_qd[i] +
-           bus_bs[i]*vm[i]^2 -
-           sum(q[a] for a in ref[:bus_arcs][i])
-           for (i,bus) in ref[:bus]
-        ]
-
+        # power_balance_q_con = [
+        #    sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
+        #    bus_qd[i] +
+        #    bus_bs[i]*vm[i]^2 -
+        #    sum(q[a] for a in ref[:bus_arcs][i])
+        #    for (i,bus) in ref[:bus]
+        # ]
+        for (i, bus) in ref[:bus]
+            push!(constraints,
+                sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
+                bus_qd[i] +
+                bus_bs[i]*vm[i]^2 -
+                sum(q[a] for a in ref[:bus_arcs][i])
+            )
+        end
 
         # @NLconstraint(model, p_fr ==  (g+g_fr)/tm*vm_fr^2 + (-g*tr+b*ti)/tm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/tm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        power_flow_p_from_con = [
-           (br_g[l]+br_g_fr[l])/br_tm[l]*vm_fr[l]^2 +
-           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-           p[(l,i,j)]
-           for (l,i,j) in ref[:arcs_from]
-        ]
+        # power_flow_p_from_con = [
+        #    (br_g[l]+br_g_fr[l])/br_tm[l]*vm_fr[l]^2 +
+        #    (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+        #    (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+        #    p[(l,i,j)]
+        #    for (l,i,j) in ref[:arcs_from]
+        # ]
+        for (l,i,j) in ref[:arcs_from]
+            push!(constraints,
+                (br_g[l]+br_g_fr[l])/br_tm[l]*vm_fr[l]^2 +
+                (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+                (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+                p[(l,i,j)]
+            )
+        end
 
         # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/tm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        power_flow_p_to_con = [
-           (br_g[l]+br_g_to[l])*vm_to[l]^2 +
-           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-           p[(l,i,j)]
-           for (l,i,j) in ref[:arcs_to]
-        ]
+        # power_flow_p_to_con = [
+        #    (br_g[l]+br_g_to[l])*vm_to[l]^2 +
+        #    (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+        #    (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+        #    p[(l,i,j)]
+        #    for (l,i,j) in ref[:arcs_to]
+        # ]
+        for (l,i,j) in ref[:arcs_to]
+            push!(constraints,
+                (br_g[l]+br_g_to[l])*vm_to[l]^2 +
+                (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+                (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+                p[(l,i,j)]
+            )
+        end
 
         # @NLconstraint(model, q_fr == -(b+b_fr)/tm*vm_fr^2 - (-b*tr-g*ti)/tm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/tm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        power_flow_q_from_con = [
-           -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
-           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-           q[(l,i,j)]
-           for (l,i,j) in ref[:arcs_from]
-        ]
+        # power_flow_q_from_con = [
+        #    -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
+        #    (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+        #    (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+        #    q[(l,i,j)]
+        #    for (l,i,j) in ref[:arcs_from]
+        # ]
+        for (l,i,j) in ref[:arcs_from]
+            push!(constraints,
+                -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
+                (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+                (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+                q[(l,i,j)]
+            )
+        end
 
         # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_fr-va_to)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        power_flow_q_to_con = [
-           -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
-           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_fr[l]-va_to[l])) +
-           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-           q[(l,i,j)]
-           for (l,i,j) in ref[:arcs_to]
-        ]
+        # power_flow_q_to_con = [
+        #    -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
+        #    (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_fr[l]-va_to[l])) +
+        #    (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+        #    q[(l,i,j)]
+        #    for (l,i,j) in ref[:arcs_to]
+        # ]
+        for (l,i,j) in ref[:arcs_to]
+            push!(constraints,
+                -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
+                (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_fr[l]-va_to[l])) +
+                (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+                q[(l,i,j)]
+            )
+        end
 
         # @constraint(model, va_fr - va_to <= branch["angmax"])
         # @constraint(model, va_fr - va_to >= branch["angmin"])
-        power_flow_vad_con = [
-           va_fr[l] - va_to[l]
-           for (l,i,j) in ref[:arcs_from]
-        ]
+        # power_flow_vad_con = [
+        #    va_fr[l] - va_to[l]
+        #    for (l,i,j) in ref[:arcs_from]
+        # ]
+        for (l,i,j) in ref[:arcs_from]
+           push!(constraints, va_fr[l] - va_to[l])
+        end
 
         # @constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
-        power_flow_mva_from_con = [
-           p[(l,i,j)]^2 + q[(l,i,j)]^2
-           for (l,i,j) in ref[:arcs_from]
-        ]
+        # power_flow_mva_from_con = [
+        #    p[(l,i,j)]^2 + q[(l,i,j)]^2
+        #    for (l,i,j) in ref[:arcs_from]
+        # ]
+        for (l,i,j) in ref[:arcs_from]
+            push!(constraints, p[(l,i,j)]^2 + q[(l,i,j)]^2)
+        end
 
         # @constraint(model, p_to^2 + q_to^2 <= branch["rate_a"]^2)
-        power_flow_mva_to_con = [
-           p[(l,i,j)]^2 + q[(l,i,j)]^2
-           for (l,i,j) in ref[:arcs_to]
-        ]
+        # power_flow_mva_to_con = [
+        #    p[(l,i,j)]^2 + q[(l,i,j)]^2
+        #    for (l,i,j) in ref[:arcs_to]
+        # ]
+        for (l,i,j) in ref[:arcs_to]
+           push!(constraints, p[(l,i,j)]^2 + q[(l,i,j)]^2)
+        end
 
-        ret = [
-            va_con...,
-            power_balance_p_con...,
-            power_balance_q_con...,
-            power_flow_p_from_con...,
-            power_flow_p_to_con...,
-            power_flow_q_from_con...,
-            power_flow_q_to_con...,
-            power_flow_vad_con...,
-            power_flow_mva_from_con...,
-            power_flow_mva_to_con...,
-        ]
+        # ret = T[
+        #     va_con...,
+        #     power_balance_p_con...,
+        #     power_balance_q_con...,
+        #     power_flow_p_from_con...,
+        #     power_flow_p_to_con...,
+        #     power_flow_q_from_con...,
+        #     power_flow_q_to_con...,
+        #     power_flow_vad_con...,
+        #     power_flow_mva_from_con...,
+        #     power_flow_mva_to_con...,
+        # ]
         #total_callback_time += time() - start
-        return ret
+        # return ret
+        return constraints
     end
 
     con_lbs = Float64[]
