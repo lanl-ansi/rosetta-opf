@@ -6,7 +6,6 @@
 #
 
 import PowerModels
-#import Ipopt
 import Ipopt_jll
 import AmplNLWriter
 import JuMP
