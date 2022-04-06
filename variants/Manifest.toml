@@ -26,6 +26,12 @@ git-tree-sha1 = "af92965fb30777147966f58acb05da51c5616b5f"
 uuid = "79e6a3ab-5dfb-504d-930d-738a2a938a0e"
 version = "3.3.3"
 
+[[deps.AmplNLWriter]]
+deps = ["MathOptInterface"]
+git-tree-sha1 = "10f5aea640a120564732636bad6335dd37a60af6"
+uuid = "7c4d4715-977e-5154-bfe0-e096adeac482"
+version = "1.0.0"
+
 [[deps.ArgCheck]]
 git-tree-sha1 = "a3a402a35a2f7e0b87828ccabbd5ebfbebe356b4"
 uuid = "dce04be8-c92d-5529-be00-80e4d2c0e197"
