@@ -221,10 +221,10 @@ function solve_opf(file_name)
            for (l,i,j) in ref[:arcs_from]
         ]
 
-        # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_fr-va_to)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
         power_flow_q_to_con = [
            -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
-           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_fr[l]-va_to[l])) +
+           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
            (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
            q[(l,i,j)]
            for (l,i,j) in ref[:arcs_to]
