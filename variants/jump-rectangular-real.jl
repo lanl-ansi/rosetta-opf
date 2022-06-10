@@ -81,19 +81,19 @@ function solve_opf(file_name)
 
         g, b = PowerModels.calc_branch_y(branch)
         tr, ti = PowerModels.calc_branch_t(branch)
-        tm = tr^2 + ti^2
+        ttm = tr^2 + ti^2
         g_fr = branch["g_fr"]
         b_fr = branch["b_fr"]
         g_to = branch["g_to"]
         b_to = branch["b_to"]
 
         # From side of the branch flow
-        JuMP.@constraint(model, p_fr ==  (g+g_fr)/tm*(vr_fr^2 + vi_fr^2) + (-g*tr+b*ti)/tm*(vr_fr*vr_to + vi_fr*vi_to) + (-b*tr-g*ti)/tm*(vi_fr*vr_to - vr_fr*vi_to) )
-        JuMP.@constraint(model, q_fr == -(b+b_fr)/tm*(vr_fr^2 + vi_fr^2) - (-b*tr-g*ti)/tm*(vr_fr*vr_to + vi_fr*vi_to) + (-g*tr+b*ti)/tm*(vi_fr*vr_to - vr_fr*vi_to) )
+        JuMP.@constraint(model, p_fr ==  (g+g_fr)/ttm*(vr_fr^2 + vi_fr^2) + (-g*tr+b*ti)/ttm*(vr_fr*vr_to + vi_fr*vi_to) + (-b*tr-g*ti)/ttm*(vi_fr*vr_to - vr_fr*vi_to) )
+        JuMP.@constraint(model, q_fr == -(b+b_fr)/ttm*(vr_fr^2 + vi_fr^2) - (-b*tr-g*ti)/ttm*(vr_fr*vr_to + vi_fr*vi_to) + (-g*tr+b*ti)/ttm*(vi_fr*vr_to - vr_fr*vi_to) )
 
         # To side of the branch flow
-        JuMP.@constraint(model, p_to ==  (g+g_to)*(vr_to^2 + vi_to^2) + (-g*tr-b*ti)/tm*(vr_fr*vr_to + vi_fr*vi_to) + (-b*tr+g*ti)/tm*(-(vi_fr*vr_to - vr_fr*vi_to)) )
-        JuMP.@constraint(model, q_to == -(b+b_to)*(vr_to^2 + vi_to^2) - (-b*tr+g*ti)/tm*(vr_fr*vr_to + vi_fr*vi_to) + (-g*tr-b*ti)/tm*(-(vi_fr*vr_to - vr_fr*vi_to)) )
+        JuMP.@constraint(model, p_to ==  (g+g_to)*(vr_to^2 + vi_to^2) + (-g*tr-b*ti)/ttm*(vr_fr*vr_to + vi_fr*vi_to) + (-b*tr+g*ti)/ttm*(-(vi_fr*vr_to - vr_fr*vi_to)) )
+        JuMP.@constraint(model, q_to == -(b+b_to)*(vr_to^2 + vi_to^2) - (-b*tr+g*ti)/ttm*(vr_fr*vr_to + vi_fr*vi_to) + (-g*tr-b*ti)/ttm*(-(vi_fr*vr_to - vr_fr*vi_to)) )
 
         # Voltage angle difference limit
         JuMP.@constraint(model, (vi_fr*vr_to - vr_fr*vi_to) <= tan(branch["angmax"])*(vr_fr*vr_to + vi_fr*vi_to))

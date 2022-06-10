@@ -47,7 +47,7 @@ function solve_opf(file_name)
 
     br_tr = Dict(i => 0.0 for (i,branch) in ref[:branch])
     br_ti = Dict(i => 0.0 for (i,branch) in ref[:branch])
-    br_tm = Dict(i => 0.0 for (i,branch) in ref[:branch])
+    br_ttm = Dict(i => 0.0 for (i,branch) in ref[:branch])
 
     br_g_fr = Dict(i => 0.0 for (i,branch) in ref[:branch])
     br_b_fr = Dict(i => 0.0 for (i,branch) in ref[:branch])
@@ -63,7 +63,7 @@ function solve_opf(file_name)
 
         br_tr[i] = tr
         br_ti[i] = ti
-        br_tm[i] = tr^2 + ti^2
+        br_ttm[i] = tr^2 + ti^2
 
         br_g_fr[i] = branch["g_fr"]
         br_b_fr[i] = branch["b_fr"]
@@ -194,38 +194,38 @@ function solve_opf(file_name)
         ]
 
 
-        # @NLconstraint(model, p_fr ==  (g+g_fr)/tm*vm_fr^2 + (-g*tr+b*ti)/tm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/tm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        # @NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
         power_flow_p_from_con = [
-           (br_g[l]+br_g_fr[l])/br_tm[l]*vm_fr[l]^2 +
-           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+           (br_g[l]+br_g_fr[l])/br_ttm[l]*vm_fr[l]^2 +
+           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
            p[(l,i,j)]
            for (l,i,j) in ref[:arcs_from]
         ]
 
-        # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/tm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
         power_flow_p_to_con = [
            (br_g[l]+br_g_to[l])*vm_to[l]^2 +
-           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
            p[(l,i,j)]
            for (l,i,j) in ref[:arcs_to]
         ]
 
-        # @NLconstraint(model, q_fr == -(b+b_fr)/tm*vm_fr^2 - (-b*tr-g*ti)/tm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/tm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        # @NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
         power_flow_q_from_con = [
-           -(br_b[l]+br_b_fr[l])/br_tm[l]*vm_fr[l]^2 -
-           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_tm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+           -(br_b[l]+br_b_fr[l])/br_ttm[l]*vm_fr[l]^2 -
+           (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+           (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
            q[(l,i,j)]
            for (l,i,j) in ref[:arcs_from]
         ]
 
-        # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/tm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/tm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
         power_flow_q_to_con = [
            -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
-           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_tm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+           (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+           (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
            q[(l,i,j)]
            for (l,i,j) in ref[:arcs_to]
         ]
