@@ -48,7 +48,7 @@ function solve_opf(file_name)
 
     br_tr = Dict(i => 0.0 for (i,branch) in ref[:branch])
     br_ti = Dict(i => 0.0 for (i,branch) in ref[:branch])
-    br_tm = Dict(i => 0.0 for (i,branch) in ref[:branch])
+    br_ttm = Dict(i => 0.0 for (i,branch) in ref[:branch])
 
     br_g_fr = Dict(i => 0.0 for (i,branch) in ref[:branch])
     br_b_fr = Dict(i => 0.0 for (i,branch) in ref[:branch])
@@ -64,7 +64,7 @@ function solve_opf(file_name)
 
         br_tr[i] = tr
         br_ti[i] = ti
-        br_tm[i] = tr^2 + ti^2
+        br_ttm[i] = tr^2 + ti^2
 
         br_g_fr[i] = branch["g_fr"]
         br_b_fr[i] = branch["b_fr"]
