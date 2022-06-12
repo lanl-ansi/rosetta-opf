@@ -1,7 +1,8 @@
 #!/usr/bin/env julia
 ###### AC-OPF using Optimization.jl ######
 #
-# constraint optimization implementation reference:https://github.com/SciML/Optimization.jl/blob/master/lib/OptimizationMOI/test/runtests.jl
+# This package was formerly known as GalacticOptim.jl
+# constraint optimization implementation reference: https://github.com/SciML/Optimization.jl/blob/master/lib/OptimizationMOI/test/runtests.jl
 # other AD libraries can be considered: https://docs.sciml.ai/dev/modules/Optimization/API/optimization_function/
 # however ForwardDiff is the only one that is compatible with constraint functions
 #
