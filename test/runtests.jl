@@ -19,8 +19,8 @@ end
 
 @testset "Rosetta OPF" begin
 
-    @testset "GalacticOptim" begin
-        include("../galacticoptim.jl")
+    @testset "Optimization" begin
+        include("../optimization.jl")
         result = solve_opf(test_case)
 
         @test check_result_keys(result)
