@@ -184,8 +184,8 @@ function solve_opf(file_name)
     ]
     =#
 
-    model_variables = -1
-    model_constraints = -1
+    model_variables = Nonconvex.NonconvexCore.getnvars(model)
+    model_constraints = Nonconvex.NonconvexCore.getnconstraints(model)
 
 
     model_build_time = time() - time_model_start
@@ -197,10 +197,11 @@ function solve_opf(file_name)
     first_order = true
     options = IpoptOptions(; first_order)
     sym_model = Nonconvex.symbolify(model, hessian=!first_order, sparse=true, simplify=true)
-    r = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
+    result = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
 
-    cost = 0.0 # TBD
-    feasible = false # TBD
+    println(result.minimizer)
+    cost = result.minimum
+    feasible = result.status == 0 # just guessing this is correct
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
