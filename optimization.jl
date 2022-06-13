@@ -10,7 +10,7 @@
 import PowerModels
 import Optimization
 import OptimizationMOI
-import ForwardDiff
+import ModelingToolkit
 import Ipopt
 
 function solve_opf(file_name)
@@ -329,8 +329,8 @@ function solve_opf(file_name)
     println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
 
-    optprob = Optimization.OptimizationFunction(opf_objective, Optimization.AutoForwardDiff(); cons=opf_constraints)
-    prob = Optimization.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
+    optprob = Optimization.OptimizationFunction(opf_objective, Optimization.AutoModelingToolkit(true, true); cons=opf_constraints)
+    prob = Optimization.OptimizationProblem(optprob, var_init; lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
     model_build_time = time() - time_model_start
 
