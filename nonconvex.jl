@@ -5,9 +5,11 @@
 # currently does not converge due to an upstream issue with the AD backend Zygote: https://github.com/JuliaNonconvex/Nonconvex.jl/issues/130
 #
 
+
 import PowerModels
 import Nonconvex
 Nonconvex.@load Ipopt
+
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -88,6 +90,7 @@ function solve_opf(file_name)
         addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #q
     end
 
+
     #total_callback_time = 0.0
     function opf_objective(x::OrderedDict)
         #start = time()
@@ -99,12 +102,87 @@ function solve_opf(file_name)
         #total_callback_time += time() - start
         return cost
     end
+    Nonconvex.set_objective!(model, opf_objective)
+
+
+    function const_ref_bus(x::OrderedDict, i)
+        return x["va_$(i)"]
+    end
+    for (i,bus) in ref[:ref_buses]
+        add_eq_constraint!(model, x -> const_ref_bus(x,i))
+    end
+
 
     # TBD once AD is resolved
     #add_ineq_constraint!(model, f)
     #add_eq_constraint!(model, f)
 
-    Nonconvex.set_objective!(model, opf_objective)
+    #=
+    #     @constraint(model,
+    #         sum(p[a] for a in ref[:bus_arcs][i]) ==
+    #         sum(pg[g] for g in ref[:bus_gens][i]) -
+    #         sum(load["pd"] for load in bus_loads) -
+    #         sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
+    #     )
+    power_balance_p_con = [
+       sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
+       bus_pd[i] -
+       bus_gs[i]*vm[i]^2 -
+       sum(p[a] for a in ref[:bus_arcs][i])
+       for (i,bus) in ref[:bus]
+    ]
+
+    #     @constraint(model,
+    #         sum(q[a] for a in ref[:bus_arcs][i]) ==
+    #         sum(qg[g] for g in ref[:bus_gens][i]) -
+    #         sum(load["qd"] for load in bus_loads) +
+    #         sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
+    #     )
+    power_balance_q_con = [
+       sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
+       bus_qd[i] +
+       bus_bs[i]*vm[i]^2 -
+       sum(q[a] for a in ref[:bus_arcs][i])
+       for (i,bus) in ref[:bus]
+    ]
+
+
+    # @NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+    power_flow_p_from_con = [
+       (br_g[l]+br_g_fr[l])/br_ttm[l]*vm_fr[l]^2 +
+       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+       (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+       p[(l,i,j)]
+       for (l,i,j) in ref[:arcs_from]
+    ]
+
+    # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+    power_flow_p_to_con = [
+       (br_g[l]+br_g_to[l])*vm_to[l]^2 +
+       (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+       (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+       p[(l,i,j)]
+       for (l,i,j) in ref[:arcs_to]
+    ]
+
+    # @NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+    power_flow_q_from_con = [
+       -(br_b[l]+br_b_fr[l])/br_ttm[l]*vm_fr[l]^2 -
+       (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
+       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
+       q[(l,i,j)]
+       for (l,i,j) in ref[:arcs_from]
+    ]
+
+    # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+    power_flow_q_to_con = [
+       -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
+       (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
+       (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
+       q[(l,i,j)]
+       for (l,i,j) in ref[:arcs_to]
+    ]
+    =#
 
     model_variables = -1
     model_constraints = -1
@@ -116,8 +194,11 @@ function solve_opf(file_name)
     time_solve_start = time()
 
     x0 = NonconvexCore.getinit(model)
-    #r = optimize(model, IpoptAlg(), x0, options = IpoptOptions(print_level = 0))
-    r = Nonconvex.optimize(model, IpoptAlg(), x0)
+    first_order = true
+    options = IpoptOptions(; first_order)
+    sym_model = Nonconvex.symbolify(model, hessian=!first_order, sparse=true, simplify=true)
+    r = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
+
     cost = 0.0 # TBD
     feasible = false # TBD
 
