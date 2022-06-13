@@ -662,9 +662,9 @@ uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
 [[deps.LinearMaps]]
 deps = ["LinearAlgebra", "SparseArrays", "Statistics"]
-git-tree-sha1 = "9e9c3fa4de0b4f146d97eed3485711928789865b"
+git-tree-sha1 = "5d1c61ae6b136e8125b86c6bec1044fdb6ba8da0"
 uuid = "7a12625a-238d-50fd-b39a-03d52299707e"
-version = "3.6.2"
+version = "3.7.0"
 
 [[deps.LinearOperators]]
 deps = ["FastClosures", "LDLFactorizations", "LinearAlgebra", "Printf", "SparseArrays", "TimerOutputs"]
@@ -840,9 +840,9 @@ version = "0.1.4"
 
 [[deps.NonconvexUtils]]
 deps = ["AbstractDifferentiation", "ChainRulesCore", "ForwardDiff", "IterativeSolvers", "LinearAlgebra", "LinearMaps", "MacroTools", "NonconvexCore", "SparseArrays", "SparseDiffTools", "Symbolics", "Zygote"]
-git-tree-sha1 = "156d24585a3a98d473e67c594d309f921e173a5d"
+git-tree-sha1 = "71c60fc44a479feda7518cbfa1bd44a03db7a80d"
 uuid = "c48e48a2-1f5e-44ff-8799-c8e168d11d1b"
-version = "0.2.0"
+version = "0.2.1"
 
 [[deps.NonlinearSolve]]
 deps = ["ArrayInterfaceCore", "FiniteDiff", "ForwardDiff", "IterativeSolvers", "LinearAlgebra", "RecursiveArrayTools", "RecursiveFactorization", "Reexport", "SciMLBase", "Setfield", "StaticArrays", "UnPack"]
@@ -852,9 +852,9 @@ version = "0.3.20"
 
 [[deps.OffsetArrays]]
 deps = ["Adapt"]
-git-tree-sha1 = "b4975062de00106132d0b01b5962c09f7db7d880"
+git-tree-sha1 = "ec2e30596282d722f018ae784b7f44f3b88065e4"
 uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-version = "1.12.5"
+version = "1.12.6"
 
 [[deps.OpenBLAS32_jll]]
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
@@ -890,7 +890,7 @@ version = "3.6.0"
 
 [[deps.OptimizationMOI]]
 deps = ["MathOptInterface", "Optimization", "SparseArrays"]
-git-tree-sha1 = "d503bb4cb95bc19e37a9de28f06a26d8e61c628a"
+git-tree-sha1 = "9e5faa351fcbf352f12a2aff616a58b3d6ddc005"
 repo-rev = "master"
 repo-subdir = "lib/OptimizationMOI"
 repo-url = "https://github.com/SciML/Optimization.jl.git"
