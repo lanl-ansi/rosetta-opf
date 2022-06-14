@@ -57,6 +57,10 @@ function solve_opf(file_name)
     br_g_to = Dict(i => 0.0 for (i,branch) in ref[:branch])
     br_b_to = Dict(i => 0.0 for (i,branch) in ref[:branch])
 
+    br_rate_a = Dict(i => 0.0 for (i,branch) in ref[:branch])
+    br_angmin = Dict(i => 0.0 for (i,branch) in ref[:branch])
+    br_angmax = Dict(i => 0.0 for (i,branch) in ref[:branch])
+
     for (i,branch) in ref[:branch]
         g, b = PowerModels.calc_branch_y(branch)
         tr, ti = PowerModels.calc_branch_t(branch)
@@ -72,6 +76,10 @@ function solve_opf(file_name)
         br_b_fr[i] = branch["b_fr"]
         br_g_to[i] = branch["g_to"]
         br_b_to[i] = branch["b_to"]
+
+        br_rate_a[i] = branch["rate_a"]
+        br_angmin[i] = branch["angmin"]
+        br_angmax[i] = branch["angmax"]
     end
 
     for (i,bus) in ref[:bus]
@@ -91,6 +99,7 @@ function solve_opf(file_name)
     end
 
 
+    # JuMP.@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
     #total_callback_time = 0.0
     function opf_objective(x::OrderedDict)
         #start = time()
@@ -104,7 +113,7 @@ function solve_opf(file_name)
     end
     Nonconvex.set_objective!(model, opf_objective)
 
-
+    # JuMP.@constraint(model, va[i] == 0)
     function const_ref_bus(x::OrderedDict, i)
         return x["va_$(i)"]
     end
@@ -112,81 +121,106 @@ function solve_opf(file_name)
         add_eq_constraint!(model, x -> const_ref_bus(x,i))
     end
 
+    # @constraint(model,
+    #     sum(p[a] for a in ref[:bus_arcs][i]) ==
+    #     sum(pg[g] for g in ref[:bus_gens][i]) -
+    #     sum(load["pd"] for load in bus_loads) -
+    #     sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
+    # )
+    function const_power_balance_p(x::OrderedDict, b)
+        balance = - bus_pd[b] - bus_gs[b]*x["vm_$(b)"]^2
+        for (l,i,j) in ref[:bus_arcs][b]
+            balance -= x["p_$(l)_$(i)_$(j)"]
+        end
+        for j in ref[:bus_gens][b]
+            balance += x["pg_$(j)"]
+        end
+        return balance
+    end
 
-    # TBD once AD is resolved
-    #add_ineq_constraint!(model, f)
-    #add_eq_constraint!(model, f)
+    # @constraint(model,
+    #     sum(q[a] for a in ref[:bus_arcs][i]) ==
+    #     sum(qg[g] for g in ref[:bus_gens][i]) -
+    #     sum(load["qd"] for load in bus_loads) +
+    #     sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
+    # )
+    function const_power_balance_q(x::OrderedDict, b)
+        balance = - bus_qd[b] + bus_bs[b]*x["vm_$(b)"]^2
+        for (l,i,j) in ref[:bus_arcs][b]
+            balance -= x["q_$(l)_$(i)_$(j)"]
+        end
+        for j in ref[:bus_gens][b]
+            balance += x["qg_$(j)"]
+        end
+        return balance
+    end
 
-    #=
-    #     @constraint(model,
-    #         sum(p[a] for a in ref[:bus_arcs][i]) ==
-    #         sum(pg[g] for g in ref[:bus_gens][i]) -
-    #         sum(load["pd"] for load in bus_loads) -
-    #         sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
-    #     )
-    power_balance_p_con = [
-       sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
-       bus_pd[i] -
-       bus_gs[i]*vm[i]^2 -
-       sum(p[a] for a in ref[:bus_arcs][i])
-       for (i,bus) in ref[:bus]
-    ]
-
-    #     @constraint(model,
-    #         sum(q[a] for a in ref[:bus_arcs][i]) ==
-    #         sum(qg[g] for g in ref[:bus_gens][i]) -
-    #         sum(load["qd"] for load in bus_loads) +
-    #         sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
-    #     )
-    power_balance_q_con = [
-       sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
-       bus_qd[i] +
-       bus_bs[i]*vm[i]^2 -
-       sum(q[a] for a in ref[:bus_arcs][i])
-       for (i,bus) in ref[:bus]
-    ]
+    for (i,bus) in ref[:bus]
+        add_eq_constraint!(model, x -> const_power_balance_p(x,i))
+        add_eq_constraint!(model, x -> const_power_balance_q(x,i))
+    end
 
 
     # @NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-    power_flow_p_from_con = [
-       (br_g[l]+br_g_fr[l])/br_ttm[l]*vm_fr[l]^2 +
-       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-       (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-       p[(l,i,j)]
-       for (l,i,j) in ref[:arcs_from]
-    ]
+    function const_flow_p_from(x::OrderedDict,l,i,j)
+        return (br_g[l]+br_g_fr[l])/br_ttm[l]*x["vm_$(i)"]^2 +
+        (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(x["vm_$(i)"]*x["vm_$(j)"]*cos(x["va_$(i)"]-x["va_$(j)"])) +
+        (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(x["vm_$(i)"]*x["vm_$(j)"]*sin(x["va_$(i)"]-x["va_$(j)"])) -
+        x["p_$(l)_$(i)_$(j)"]
+    end
+    # @NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+    function const_flow_q_from(x::OrderedDict,l,i,j)
+        return -(br_b[l]+br_b_fr[l])/br_ttm[l]*x["vm_$(i)"]^2 -
+       (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(x["vm_$(i)"]*x["vm_$(j)"]*cos(x["va_$(i)"]-x["va_$(j)"])) +
+       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(x["vm_$(i)"]*x["vm_$(j)"]*sin(x["va_$(i)"]-x["va_$(j)"])) -
+       x["q_$(l)_$(i)_$(j)"]
+    end
 
     # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-    power_flow_p_to_con = [
-       (br_g[l]+br_g_to[l])*vm_to[l]^2 +
-       (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-       (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-       p[(l,i,j)]
-       for (l,i,j) in ref[:arcs_to]
-    ]
-
-    # @NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-    power_flow_q_from_con = [
-       -(br_b[l]+br_b_fr[l])/br_ttm[l]*vm_fr[l]^2 -
-       (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-       (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-       q[(l,i,j)]
-       for (l,i,j) in ref[:arcs_from]
-    ]
-
+    function const_flow_p_to(x::OrderedDict,l,i,j)
+        return (br_g[l]+br_g_to[l])*x["vm_$(j)"]^2 +
+        (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(x["vm_$(j)"]*x["vm_$(i)"]*cos(x["va_$(j)"]-x["va_$(i)"])) +
+        (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(x["vm_$(j)"]*x["vm_$(i)"]*sin(x["va_$(j)"]-x["va_$(i)"])) -
+        x["p_$(l)_$(j)_$(i)"]
+    end
     # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-    power_flow_q_to_con = [
-       -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
-       (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-       (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-       q[(l,i,j)]
-       for (l,i,j) in ref[:arcs_to]
-    ]
-    =#
+    function const_flow_q_to(x::OrderedDict,l,i,j)
+       return -(br_b[l]+br_b_to[l])*x["vm_$(j)"]^2 -
+       (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(x["vm_$(j)"]*x["vm_$(i)"]*cos(x["va_$(j)"]-x["va_$(i)"])) +
+       (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(x["vm_$(j)"]*x["vm_$(i)"]*sin(x["va_$(j)"]-x["va_$(i)"])) -
+       x["q_$(l)_$(j)_$(i)"]
+    end
+
+    function const_thermal_limit(x::OrderedDict,l,i,j)
+       return x["p_$(l)_$(i)_$(j)"]^2 + x["q_$(l)_$(i)_$(j)"]^2 - br_rate_a[l]^2
+    end
+
+    function const_voltage_angle_difference_lb(x::OrderedDict,l,i,j)
+       return br_angmin[l] - x["va_$(i)"] + x["va_$(j)"]
+    end
+
+    function const_voltage_angle_difference_ub(x::OrderedDict,l,i,j)
+       return x["va_$(i)"] - x["va_$(j)"] - br_angmax[l]
+    end
+
+    for (l,i,j) in ref[:arcs_from]
+        add_eq_constraint!(model, x -> const_flow_p_from(x,l,i,j))
+        add_eq_constraint!(model, x -> const_flow_q_from(x,l,i,j))
+
+        add_eq_constraint!(model, x -> const_flow_p_to(x,l,i,j))
+        add_eq_constraint!(model, x -> const_flow_q_to(x,l,i,j))
+
+        add_ineq_constraint!(model, x -> const_thermal_limit(x,l,i,j))
+        add_ineq_constraint!(model, x -> const_thermal_limit(x,l,j,i))
+
+        add_ineq_constraint!(model, x -> const_voltage_angle_difference_lb(x,l,i,j))
+        add_ineq_constraint!(model, x -> const_voltage_angle_difference_ub(x,l,i,j))
+    end
 
     model_variables = Nonconvex.NonconvexCore.getnvars(model)
     model_constraints = Nonconvex.NonconvexCore.getnconstraints(model)
-
+    println("variables: $(model_variables)")
+    println("constraints: $(model_constraints)")
 
     model_build_time = time() - time_model_start
 
@@ -194,7 +228,7 @@ function solve_opf(file_name)
     time_solve_start = time()
 
     x0 = NonconvexCore.getinit(model)
-    first_order = true
+    first_order = false
     options = IpoptOptions(; first_order)
     sym_model = Nonconvex.symbolify(model, hessian=!first_order, sparse=true, simplify=true)
     result = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
