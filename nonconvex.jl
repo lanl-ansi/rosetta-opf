@@ -100,15 +100,12 @@ function solve_opf(file_name)
 
 
     # JuMP.@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
-    #total_callback_time = 0.0
     function opf_objective(x::OrderedDict)
-        #start = time()
         cost = 0.0
         for (i,gen) in ref[:gen]
             pg = x["pg_$(i)"]
             cost += gen["cost"][1]*pg^2 + gen["cost"][2]*pg + gen["cost"][3]
         end
-        #total_callback_time += time() - start
         return cost
     end
     Nonconvex.set_objective!(model, opf_objective)
@@ -233,9 +230,8 @@ function solve_opf(file_name)
     sym_model = Nonconvex.symbolify(model, hessian=!first_order, sparse=true, simplify=true)
     result = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
 
-    println(result.minimizer)
     cost = result.minimum
-    feasible = result.status == 0 # just guessing this is correct
+    feasible = result.status == 0 # just guessing this is correct for Ipopt
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
