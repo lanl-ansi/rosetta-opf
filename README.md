@@ -38,7 +38,7 @@ In this formulation the complex voltage terms expand into the following expressi
 ### AC-OPF Implementations
 Each of these files is designed to be _stand-alone_ and can be tested with minimal package dependencies.
 Consequently, there is some code replication between implementations.
-- `galacticoptim.jl`: implementation using [GalacticOptim](https://github.com/SciML/GalacticOptim.jl)
+- `optimization.jl`: implementation using [Optimization](https://github.com/SciML/Optimization.jl)
 - `jump.jl`: implementation using [JuMP](https://github.com/jump-dev/JuMP.jl)
 - `nlpmodels.jl`: implementation using [ADNLPModels](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - `nonconvex.jl`: implementation using [Nonconvex](https://github.com/JuliaNonconvex/Nonconvex.jl)

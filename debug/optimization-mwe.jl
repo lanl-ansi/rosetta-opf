@@ -1,6 +1,7 @@
-# https://github.com/SciML/GalacticOptim.jl/blob/master/test/rosenbrock.jl#L30
+# https://github.com/SciML/Optimization.jl/blob/master/lib/OptimizationMOI/test/runtests.jl
 
-using GalacticOptim
+using Optimization
+using OptimizationMOI
 using ForwardDiff
 using Ipopt
 
@@ -12,7 +13,7 @@ function con2_c(x,p)
     [x[1]^2 + x[2]^2, x[2]*sin(x[1])-x[1]]
 end
 
-optprob = OptimizationFunction(rosenbrock, GalacticOptim.AutoForwardDiff(); cons=con2_c)
+optprob = OptimizationFunction(rosenbrock, Optimization.AutoForwardDiff(); cons=con2_c)
 prob = OptimizationProblem(optprob, x0, p, lcons=[-Inf,-Inf], ucons=[Inf,Inf])
 
 sol = solve(prob, Ipopt.Optimizer())

@@ -1,13 +1,16 @@
 #!/usr/bin/env julia
-###### AC-OPF using GalacticOptim ######
+###### AC-OPF using Optimization.jl ######
 #
-# constraint optimization implementation reference: https://github.com/SciML/GalacticOptim.jl/blob/master/test/rosenbrock.jl#L30
-# other AD libraries can be considered: https://galacticoptim.sciml.ai/stable/API/optimization_function/#Defining-Optimization-Functions-Via-AD
+# This package was formerly known as GalacticOptim.jl
+# constraint optimization implementation reference: https://github.com/SciML/Optimization.jl/blob/master/lib/OptimizationMOI/test/runtests.jl
+# other AD libraries can be considered: https://docs.sciml.ai/dev/modules/Optimization/API/optimization_function/
 # however ForwardDiff is the only one that is compatible with constraint functions
 #
 
 import PowerModels
-import GalacticOptim, ForwardDiff
+import Optimization
+import OptimizationMOI
+import ModelingToolkit
 import Ipopt
 
 function solve_opf(file_name)
@@ -326,15 +329,15 @@ function solve_opf(file_name)
     println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
 
-    optprob = GalacticOptim.OptimizationFunction(opf_objective, GalacticOptim.AutoForwardDiff(); cons=opf_constraints)
-    prob = GalacticOptim.OptimizationProblem(optprob, var_init, ref, lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
+    optprob = Optimization.OptimizationFunction(opf_objective, Optimization.AutoModelingToolkit(true, true); cons=opf_constraints)
+    prob = Optimization.OptimizationProblem(optprob, var_init; lb=var_lb, ub=var_ub, lcons=con_lbs, ucons=con_ubs)
 
     model_build_time = time() - time_model_start
 
 
     time_solve_start = time()
 
-    sol = GalacticOptim.solve(prob, Ipopt.Optimizer())
+    sol = Optimization.solve(prob, Ipopt.Optimizer())
     cost = sol.minimum
     feasible = (sol.retcode == :LOCALLY_SOLVED)
     #println(sol.u) # solution vector
