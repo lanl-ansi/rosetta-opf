@@ -16,9 +16,7 @@ end
 args = parse_args(s)
 
 
-if args["solver"] == "galacticoptim"
-    include("galacticoptim.jl")
-elseif args["solver"] == "jump"
+if args["solver"] == "jump"
     include("jump.jl")
 elseif args["solver"] == "nlpmodels"
     include("nlpmodels.jl")
@@ -26,6 +24,8 @@ elseif args["solver"] == "nonconvex"
     include("nonconvex.jl")
 elseif args["solver"] == "optim"
     include("optim.jl")
+elseif args["solver"] == "optimization"
+    include("optimization.jl")
 elseif args["solver"] == "jump-nl"
     include("variants/jump-nl.jl")
 elseif args["solver"] == "jump-sad"
