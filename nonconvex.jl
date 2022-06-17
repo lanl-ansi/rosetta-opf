@@ -219,16 +219,25 @@ function solve_opf(file_name)
     println("variables: $(model_variables)")
     println("constraints: $(model_constraints)")
 
+    println("symbolify...")
+    sym_model = Nonconvex.symbolify(
+        model;
+        hessian=true,
+        sparse=true,
+        simplify=true,
+    )
+
     model_build_time = time() - time_model_start
 
 
     time_solve_start = time()
 
-    x0 = NonconvexCore.getinit(model)
-    first_order = false
-    options = IpoptOptions(; first_order)
-    sym_model = Nonconvex.symbolify(model, hessian=!first_order, sparse=true, simplify=true)
-    result = Nonconvex.optimize(sym_model, IpoptAlg(), x0; options)
+    result = Nonconvex.optimize(
+        sym_model,
+        IpoptAlg(),
+        NonconvexCore.getinit(model);
+        options = IpoptOptions(; first_order=false, sparse=true),
+    )
 
     cost = result.minimum
     feasible = result.status == 0 # just guessing this is correct for Ipopt
