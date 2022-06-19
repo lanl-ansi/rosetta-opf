@@ -82,20 +82,22 @@ function solve_opf(file_name)
         br_angmax[i] = branch["angmax"]
     end
 
+    # Variable starting point impacts correctness of AD (as of, Nonconvex v2.0.2, NonconvexIpopt v0.4.0)
+    # but using non-zero starting values appears to work
     for (i,bus) in ref[:bus]
-        addvar!(model, "va_$(i)", -Inf, Inf) #va
+        addvar!(model, "va_$(i)", -Inf, Inf, init=1.0) #va
         addvar!(model, "vm_$(i)", bus["vmin"], bus["vmax"], init=1.0) #vm
     end
 
     for (i,gen) in ref[:gen]
-        addvar!(model, "pg_$(i)", gen["pmin"], gen["pmax"]) #pg
-        addvar!(model, "qg_$(i)", gen["qmin"], gen["qmax"]) #qg
+        addvar!(model, "pg_$(i)", gen["pmin"], gen["pmax"], init=1.0) #pg
+        addvar!(model, "qg_$(i)", gen["qmin"], gen["qmax"], init=1.0) #qg
     end
 
     for (l,i,j) in ref[:arcs]
         branch = ref[:branch][l]
-        addvar!(model, "p_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #p
-        addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"]) #q
+        addvar!(model, "p_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"], init=1.0) #p
+        addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"], init=1.0) #q
     end
 
 
@@ -219,24 +221,16 @@ function solve_opf(file_name)
     println("variables: $(model_variables)")
     println("constraints: $(model_constraints)")
 
-    println("symbolify...")
-    sym_model = Nonconvex.symbolify(
-        model;
-        hessian=true,
-        sparse=true,
-        simplify=true,
-    )
-
     model_build_time = time() - time_model_start
 
 
     time_solve_start = time()
 
     result = Nonconvex.optimize(
-        sym_model,
+        model,
         IpoptAlg(),
         NonconvexCore.getinit(model);
-        options = IpoptOptions(; first_order=false, sparse=true),
+        options = IpoptOptions(; first_order=false, symbolic=true, sparse=true),
     )
 
     cost = result.minimum
