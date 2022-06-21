@@ -108,6 +108,12 @@ git-tree-sha1 = "f641eb0a4f00c343bbc32346e1217b86f3ce9dad"
 uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
+[[deps.CasADi_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "Ipopt_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "de3671f6c5c4e27d4af5b1b723893989085ba6ab"
+uuid = "4e54d0b0-c9f2-5505-b569-bd333cacc8c1"
+version = "3.5.5+0"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "9489214b993cd42d17f44c36e359bf6a7c919abf"
