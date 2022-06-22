@@ -109,7 +109,8 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
-
+    
+    ENV["IPOPT_DEFAULT_LINEAR_SOLVER"] = "ma27"
     JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
