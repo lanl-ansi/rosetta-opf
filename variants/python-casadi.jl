@@ -198,8 +198,6 @@ function solve_opf(file_name)
 end
 
 
-# if __name__ == "__main__":
-#     ret = solve_opf("pglib_opf_case5_pjm.json")
-#     print(ret)
-
-solve_opf("data/pglib_opf_case10000_goc.m")
+if isinteractive() == false
+    solve_opf("$(@__DIR__)/../data/pglib_opf_case5_pjm.m")
+end
