@@ -133,5 +133,5 @@ def solve_opf(filename):
     return solution
 
 if __name__ == "__main__":
-    ret = solve_opf("pglib_opf_case5_pjm.json")
+    ret = solve_opf("../data/pglib_opf_case5_pjm.json")
     print(ret)
