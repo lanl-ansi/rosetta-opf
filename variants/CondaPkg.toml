@@ -1,5 +1,0 @@
-
-[pip.deps]
-casadi = ""
-[deps]
-numpy = ""
