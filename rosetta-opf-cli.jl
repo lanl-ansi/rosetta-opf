@@ -28,8 +28,6 @@ elseif args["solver"] == "optimization"
     include("optimization.jl")
 elseif args["solver"] == "jump-nl"
     include("variants/jump-nl.jl")
-elseif args["solver"] == "jump-casadi"
-    include("variants/jump-casadi.jl")
 elseif args["solver"] == "jump-sad"
     include("variants/jump-symbolic-ad.jl")
 elseif args["solver"] == "casadi"
