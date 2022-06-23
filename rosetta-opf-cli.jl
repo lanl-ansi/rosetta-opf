@@ -32,6 +32,8 @@ elseif args["solver"] == "jump-casadi"
     include("variants/jump-casadi.jl")
 elseif args["solver"] == "jump-sad"
     include("variants/jump-symbolic-ad.jl")
+elseif args["solver"] == "casadi"
+    include("variants/casadi.jl")
 else
     error("unknwon solver type $(args["solver"])")
 end

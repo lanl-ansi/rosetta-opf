@@ -144,7 +144,7 @@ function solve_opf(file_name)
     end
 
     nlp = Dict("x" => casadi.vcat(x), "f" => f, "g" => casadi.vcat(cons))
-    options = PythonCall.pydict(Dict("error_on_fail" => true))
+    options = PythonCall.pydict(Dict("error_on_fail" => true, "ipopt" => PythonCall.pydict(Dict("linear_solver" => "ma27"))))
     model = casadi.nlpsol("model", "ipopt", PythonCall.pydict(nlp), options)
 
     model_variables = length(x)
