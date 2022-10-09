@@ -139,7 +139,7 @@ function solve_opf(file_name)
         return cost
     end
 
-    function opf_constraints(x, param)
+    function opf_constraints(ret, x, param)
         #start = time()
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -241,7 +241,7 @@ function solve_opf(file_name)
            p[(l,i,j)]^2 + q[(l,i,j)]^2
            for (l,i,j) in ref[:arcs_to]
         ]
-        ret = [
+        ret .= [
             va_con...,
             power_balance_p_con...,
             power_balance_q_con...,
@@ -254,7 +254,6 @@ function solve_opf(file_name)
             power_flow_mva_to_con...,
         ]
         #total_callback_time += time() - start
-        return ret
     end
 
     con_lbs = Float64[]
@@ -324,7 +323,8 @@ function solve_opf(file_name)
     end
 
     model_variables = length(var_init)
-    model_constraints = length(opf_constraints(var_init, ref))
+    ret = Array{Float64}(undef, length(con_lbs))
+    model_constraints = length(opf_constraints(ret, var_init, ref))
     println("variables: $(model_variables), $(length(var_lb)), $(length(var_ub))")
     println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
