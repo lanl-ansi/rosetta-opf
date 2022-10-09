@@ -2,13 +2,13 @@
 ###### AC-OPF using JuMP ######
 #
 # implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
-# This uses https://github.com/odow/SymbolicAD.jl instead of the built-in AD
+# This uses https://github.com/odow/MathOptSymbolicAD.jl instead of the built-in AD
 # library
 
 import PowerModels
 import Ipopt
 import JuMP
-import SymbolicAD
+import MathOptSymbolicAD
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -109,8 +109,7 @@ function solve_opf(file_name)
 
     time_solve_start = time()
     JuMP.set_optimizer_attribute(model, "linear_solver", "ma27")
-    JuMP.set_optimize_hook(model, SymbolicAD.optimize_hook)
-    JuMP.optimize!(model)
+    JuMP.optimize!(model; _differentiation_backend = MathOptSymbolicAD.DefaultBackend())
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
 
@@ -118,7 +117,6 @@ function solve_opf(file_name)
     total_time = time() - time_data_start
 
     nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
-    @assert nlp_block.evaluator isa SymbolicAD._NonlinearOracle
     total_callback_time =
         nlp_block.evaluator.eval_objective_timer +
         nlp_block.evaluator.eval_objective_gradient_timer +

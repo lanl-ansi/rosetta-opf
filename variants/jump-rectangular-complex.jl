@@ -8,7 +8,6 @@
 import PowerModels
 import Ipopt
 import JuMP
-import ComplexOptInterface
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -26,9 +25,6 @@ function solve_opf(file_name)
 
     model = JuMP.Model(Ipopt.Optimizer)
     #set_optimizer_attribute(model, "print_level", 0)
-
-    ComplexOptInterface.add_all_bridges(model)
-
 
     JuMP.@variable(model, -ref[:bus][i]["vmax"] <= vr[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
     JuMP.@variable(model, -ref[:bus][i]["vmax"] <= vi[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=0.0)
