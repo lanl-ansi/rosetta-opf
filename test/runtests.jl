@@ -46,8 +46,6 @@ end
         @test isapprox(result["cost"], test_case_cost)
     end
 
-    #=
-    # currently blocked by https://github.com/JuliaNonconvex/Nonconvex.jl/issues/130
     @testset "NonConvex" begin
         include("../nonconvex.jl")
         result = solve_opf(test_case)
@@ -56,7 +54,6 @@ end
         @test result["feasible"]
         @test isapprox(result["cost"], test_case_cost)
     end
-    =#
 
     # does not converge to a feasible solution
     @testset "Optim" begin
