@@ -88,7 +88,7 @@ qd = Float64[load["$i"]["qd"] for i in 1:nloads]
 f_bus = Int[branch["$i"]["f_bus"] for i in 1:nlines]
 t_bus = Int[branch["$i"]["t_bus"] for i in 1:nlines]
 tap = Float64[branch["$i"]["tap"] for i in 1:nlines]
-stat = Float64[branch["$i"]["br_status"] for i in 1:nlines]
+br_stat = Float64[branch["$i"]["br_status"] for i in 1:nlines]
 br_r = Float64[branch["$i"]["br_r"] for i in 1:nlines]
 br_x = Float64[branch["$i"]["br_x"] for i in 1:nlines]
 b_fr = Float64[branch["$i"]["b_fr"] for i in 1:nlines]
@@ -126,8 +126,8 @@ Ysh = sparse(b_sh, b_sh, shunts, nbus, nbus)
     Build admittance matrices
     (take expressions from MATPOWER)
 =#
-Ys = stat ./ (br_r + 1im * br_x)       # series admittance
-Bc = stat .* br_b                      # line charging susceptance
+Ys = br_stat ./ (br_r + 1im * br_x)       # series admittance
+Bc = br_stat .* br_b                      # line charging susceptance
 tap = tap .* exp.(1im*pi/180 .* shift) # add phase shifters
 Ytt = Ys .+ 1im .* Bc ./ 2.0
 Yff = Ytt ./ (tap .* conj.(tap))

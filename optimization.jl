@@ -339,7 +339,7 @@ function solve_opf(file_name)
 
     sol = Optimization.solve(prob, Ipopt.Optimizer())
     cost = sol.minimum
-    feasible = (sol.retcode == :LOCALLY_SOLVED)
+    feasible = (sol.retcode == Optimization.SciMLBase.ReturnCode.Success)
     #println(sol.u) # solution vector
 
     solve_time = time() - time_solve_start
