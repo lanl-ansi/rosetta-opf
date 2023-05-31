@@ -45,12 +45,6 @@ function solve_opf(file_name)
         upper_bound =  ref[:branch][l]["rate_a"] + ref[:branch][l]["rate_a"] * im,
     )
 
-
-    #JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
-    #JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
-    #S = Dict(k => p[k] + q[k]*im for k in ref[:arcs])
-
-
     JuMP.@objective(model, Min, sum(gen["cost"][1]*real(G[i])^2 + gen["cost"][2]*real(G[i]) + gen["cost"][3] for (i,gen) in ref[:gen]))
 
     for (i,bus) in ref[:ref_buses]
