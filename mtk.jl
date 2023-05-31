@@ -5,7 +5,7 @@
 # only the built-in AD library is supported
 #
 
-import PowerModels, JuMP
+import PowerModels
 import Ipopt
 import ModelingToolkit, Optimization, OptimizationMOI
 import ModelingToolkit: ≲
@@ -115,12 +115,13 @@ function solve_opf(file_name)
     for key in keys(ref[:bus])
         u0map[vm[key]] = 1.0
     end
-    prob = Optimization.OptimizationProblem(optsys, u0map, grad=true, hess=true, cons_j=true, cons_h=true, cons_sparse=true, obj_sparse=true)
+    prob = Optimization.OptimizationProblem(optsys, u0map, grad=true, hess=true, cons_j=true, cons_h=true, cons_sparse=true, sparse=true)
     sol = OptimizationMOI.solve(prob, Ipopt.Optimizer())
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
-    println(solve_time)
-    println(total_time)
+
+    println("time_solve ", solve_time)
+    println("time_total ", total_time)
     return sol
     # total_callback_time =
     #     nlp_block.evaluator.eval_objective_timer +
@@ -148,7 +149,7 @@ function solve_opf(file_name)
     # println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
     # println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
     # println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
-    println("")
+    # println("")
 
     # return Dict(
     #     "case" => file_name,
