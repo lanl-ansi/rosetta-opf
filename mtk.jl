@@ -30,8 +30,9 @@ function solve_opf(file_name)
     ModelingToolkit.@variables pg[keys(ref[:gen])] (bounds = [(ref[:gen][i]["pmin"], ref[:gen][i]["pmax"]) for i in keys(ref[:gen])])
     ModelingToolkit.@variables qg[keys(ref[:gen])] (bounds = [(ref[:gen][i]["qmin"], ref[:gen][i]["qmax"]) for i in keys(ref[:gen])])
     vars = vcat(vars, [pg[i] for i in keys(ref[:gen])], [qg[i] for i in keys(ref[:gen])])
-    ModelingToolkit.@variables p[1:6, 1:6, 1:6]
-    ModelingToolkit.@variables q[1:6, 1:6, 1:6]
+    i_inds, j_inds, l_inds = maximum(first.(ref[:arcs])), maximum(getindex.(ref[:arcs], Ref(2))), maximum(last.(ref[:arcs]))
+    ModelingToolkit.@variables p[1:i_inds, 1:j_inds, 1:l_inds]
+    ModelingToolkit.@variables q[1:i_inds, 1:j_inds, 1:l_inds]
 
     for (l, i, j) in ref[:arcs]
         push!(vars, p[l, i, j])
