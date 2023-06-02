@@ -51,16 +51,16 @@ function solve_opf(file_name)
         bus_shunts = [ref[:shunt][s] for s in ref[:bus_shunts][i]]
         push!(cons,
             sum(p[a...] for a in ref[:bus_arcs][i]) ~
-                (isempty(ref[:bus_gens][i]) ? 0.0 : sum(pg[g] for g in ref[:bus_gens][i])) -
-                (isempty(bus_loads) ? 0.0 : sum(load["pd"] for load in bus_loads))
-            # sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
+                (sum(pg[g] for g in ref[:bus_gens][i]; init = 0.0)) -
+                (sum(load["pd"] for load in bus_loads; init = 0.0))
+            + sum(shunt["gs"] for shunt in bus_shunts; init = 0.0)*vm[i]^2
         )
 
         push!(cons,
             sum(q[a...] for a in ref[:bus_arcs][i]) ~
-                (isempty(ref[:bus_gens][i]) ? 0.0 : sum(qg[g] for g in ref[:bus_gens][i])) -
-                (isempty(bus_loads) ? 0.0 : sum(load["qd"] for load in bus_loads))
-            # sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
+                (sum(qg[g] for g in ref[:bus_gens][i]; init = 0.0)) -
+                (sum(load["qd"] for load in bus_loads; init = 0.0))
+             + sum(shunt["bs"] for shunt in bus_shunts; init = 0.0)*vm[i]^2
         )
     end
 
