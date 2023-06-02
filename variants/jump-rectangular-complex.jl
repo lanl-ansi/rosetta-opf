@@ -26,23 +26,29 @@ function solve_opf(file_name)
     model = JuMP.Model(Ipopt.Optimizer)
     #set_optimizer_attribute(model, "print_level", 0)
 
-    JuMP.@variable(model, -ref[:bus][i]["vmax"] <= vr[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
-    JuMP.@variable(model, -ref[:bus][i]["vmax"] <= vi[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=0.0)
-    V = Dict(i => vr[i] + vi[i]*im for i in keys(ref[:bus]))
+    JuMP.@variable(model,
+        V[i in keys(ref[:bus])] in JuMP.ComplexPlane(),
+        lower_bound = -ref[:bus][i]["vmax"] - ref[:bus][i]["vmax"] * im,
+        upper_bound =  ref[:bus][i]["vmax"] + ref[:bus][i]["vmax"] * im,
+        start=1.0 + 0.0im
+    )
 
-    JuMP.@variable(model, ref[:gen][i]["pmin"] <= pg[i in keys(ref[:gen])] <= ref[:gen][i]["pmax"])
-    JuMP.@variable(model, ref[:gen][i]["qmin"] <= qg[i in keys(ref[:gen])] <= ref[:gen][i]["qmax"])
-    G = Dict(i => pg[i] + qg[i]*im for i in keys(ref[:gen]))
+    JuMP.@variable(model,
+        G[i in keys(ref[:gen])] in JuMP.ComplexPlane(),
+        lower_bound = ref[:gen][i]["pmin"] + ref[:gen][i]["qmin"] * im,
+        upper_bound = ref[:gen][i]["pmax"] + ref[:gen][i]["qmax"] * im,
+    )
 
-    JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
-    JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
-    S = Dict(k => p[k] + q[k]*im for k in ref[:arcs])
+    JuMP.@variable(model,
+        S[(l,i,j) in ref[:arcs]] in JuMP.ComplexPlane(),
+        lower_bound = -ref[:branch][l]["rate_a"] - ref[:branch][l]["rate_a"] * im,
+        upper_bound =  ref[:branch][l]["rate_a"] + ref[:branch][l]["rate_a"] * im,
+    )
 
-
-    JuMP.@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
+    JuMP.@objective(model, Min, sum(gen["cost"][1]*real(G[i])^2 + gen["cost"][2]*real(G[i]) + gen["cost"][3] for (i,gen) in ref[:gen]))
 
     for (i,bus) in ref[:ref_buses]
-        JuMP.@constraint(model, vi[i] == 0)
+        JuMP.@constraint(model, imag(V[i]) == 0)
     end
 
     for (i,bus) in ref[:bus]
