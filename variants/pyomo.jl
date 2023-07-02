@@ -11,11 +11,16 @@ import PythonCall
 # a single directory, so that we can pass /tmp/ipopt_jll/bin/ipopt to Pyomo.
 # It only needs to be run once.
 if !isdir("/tmp/ipopt_jll")
-    import JLLPrefixes, Pkg
-    ipopt_jll_artifacts = JLLPrefixes.collect_artifact_paths(
-        [Pkg.PackageSpec(; name = "Ipopt_jll", version = v"300.1400.400+0")]
-    )
-    JLLPrefixes.deploy_artifact_paths("/tmp/ipopt_jll", ipopt_jll_artifacts)
+    import Ipopt_jll, JLLPrefixes, Pkg
+    let
+        status = sprint(io -> Pkg.status("Ipopt_jll"; io = io))
+        version = VersionNumber(match(r"v(\d+.\d+.\d+\+\d)", status)[1])
+        ipopt_jll = Pkg.PackageSpec(; name = "Ipopt_jll", version = version)
+        JLLPrefixes.deploy_artifact_paths(
+            "/tmp/ipopt_jll",
+            JLLPrefixes.collect_artifact_paths([ipopt_jll]),
+        )
+    end
 end
 
 function solve_opf(file_name)
