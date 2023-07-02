@@ -7,6 +7,17 @@
 import PowerModels
 import PythonCall
 
+# This block of code grabs all of the Ipopt_jll dependencies as copies them into
+# a single directory, so that we can pass /tmp/ipopt_jll/bin/ipopt to Pyomo.
+# It only needs to be run once.
+if !isdir("/tmp/ipopt_jll")
+    import JLLPrefixes, Pkg
+    ipopt_jll_artifacts = JLLPrefixes.collect_artifact_paths(
+        [Pkg.PackageSpec(; name = "Ipopt_jll", version = v"300.1400.400+0")]
+    )
+    JLLPrefixes.deploy_artifact_paths("/tmp/ipopt_jll", ipopt_jll_artifacts)
+end
+
 function solve_opf(file_name)
     pyo = PythonCall.pyimport("pyomo.environ")
 
@@ -188,7 +199,6 @@ function solve_opf(file_name)
         m.va_difference_limit[i] = (branch["angmin"], va_fr - va_to, branch["angmax"])
         m.apparent_power_limit_from[i] = (p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
         m.apparent_power_limit_to[i] = (p_to^2 + q_to^2 <= branch["rate_a"]^2)
-        
     end
 
     model_build_time = time() - time_model_start
