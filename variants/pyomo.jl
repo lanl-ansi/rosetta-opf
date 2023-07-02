@@ -206,8 +206,8 @@ function solve_opf(file_name)
 
     total_time = time() - time_data_start
 
-    n_variables = results.problem.number_of_variables
-    n_constraints = results.problem.number_of_constraints
+    n_variables = PythonCall.pyconvert(Int, results.problem.number_of_variables)
+    n_constraints = PythonCall.pyconvert(Int, results.problem.number_of_constraints)
     status = results.solver.termination_condition
     feasible_termination_conditions = Set([
         pyo.TerminationCondition.optimal,
