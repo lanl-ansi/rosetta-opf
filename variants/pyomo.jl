@@ -187,6 +187,7 @@ function solve_opf(file_name)
         )
         m.va_difference_limit[i] = (branch["angmin"], va_fr - va_to, branch["angmax"])
         m.apparent_power_limit_from[i] = (p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
+        m.apparent_power_limit_to[i] = (p_to^2 + q_to^2 <= branch["rate_a"]^2)
         
     end
 
