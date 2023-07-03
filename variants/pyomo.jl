@@ -10,16 +10,27 @@ import PythonCall
 # This block of code grabs all of the Ipopt_jll dependencies as copies them into
 # a single directory, so that we can pass /tmp/ipopt_jll/bin/ipopt to Pyomo.
 # It only needs to be run once.
-if !isdir("/tmp/ipopt_jll")
+if true # !isdir("/tmp/ipopt_jll")
     import Ipopt_jll, JLLPrefixes, Pkg
+    # For LANL's restricted machines, hard-code the dependencies that are needed.
+    import Ipopt_jll, METIS_jll, MUMPS_seq_jll, CompilerSupportLibraries_jll, OpenBLAS32_jll, ASL_jll
     let
         status = sprint(io -> Pkg.status("Ipopt_jll"; io = io))
         version = VersionNumber(match(r"v(\d+.\d+.\d+\+\d)", status)[1])
         ipopt_jll = Pkg.PackageSpec(; name = "Ipopt_jll", version = version)
-        JLLPrefixes.deploy_artifact_paths(
-            "/tmp/ipopt_jll",
-            JLLPrefixes.collect_artifact_paths([ipopt_jll]),
+        dependencies = Dict(
+            ipopt_jll => [
+                Ipopt_jll.artifact_dir,
+                METIS_jll.artifact_dir,
+                MUMPS_seq_jll.artifact_dir,
+                CompilerSupportLibraries_jll.artifact_dir,
+                OpenBLAS32_jll.artifact_dir,
+                ASL_jll.artifact_dir,
+            ],
         )
+        # On non-LANL machines, it should be sufficient to do only:
+        # dependencies = JLLPrefixes.collect_artifact_paths([ipopt_jll])
+        JLLPrefixes.deploy_artifact_paths("/tmp/ipopt_jll", dependencies)
     end
 end
 
@@ -213,8 +224,8 @@ function solve_opf(file_name)
     #
     solve_time_start = time()
 
-    solver = pyo.SolverFactory("ipopt")
-    #solver.options["linear_solver"] = "ma27"
+    solver = pyo.SolverFactory("/tmp/ipopt_jll/bin/ipopt")
+    # solver.options["linear_solver"] = "ma27"
     #solver.options["print_timing_statistics"] = "yes"
     results = solver.solve(m, tee=true)
 
@@ -273,6 +284,6 @@ function solve_opf(file_name)
     )
 end
 
-if isinteractive() == false
+if true # isinteractive() == false
     solve_opf("$(@__DIR__)/../data/pglib_opf_case5_pjm.m")
 end
