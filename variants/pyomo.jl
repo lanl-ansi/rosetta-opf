@@ -10,7 +10,7 @@ import PythonCall
 # This block of code grabs all of the Ipopt_jll dependencies as copies them into
 # a single directory, so that we can pass /tmp/ipopt_jll/bin/ipopt to Pyomo.
 # It only needs to be run once.
-if true # !isdir("/tmp/ipopt_jll")
+if !isdir("/tmp/ipopt_jll")
     import Ipopt_jll, JLLPrefixes, Pkg
     # For LANL's restricted machines, hard-code the dependencies that are needed.
     import Ipopt_jll, METIS_jll, MUMPS_seq_jll, CompilerSupportLibraries_jll, OpenBLAS32_jll, ASL_jll
@@ -284,6 +284,6 @@ function solve_opf(file_name)
     )
 end
 
-if true # isinteractive() == false
+if isinteractive() == false
     solve_opf("$(@__DIR__)/../data/pglib_opf_case5_pjm.m")
 end
