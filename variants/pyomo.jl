@@ -199,7 +199,7 @@ function solve_opf(file_name)
     solve_time_start = time()
 
     solver = pyo.SolverFactory("ipopt")
-    solver.options["linear_solver"] = "ma27"
+    #solver.options["linear_solver"] = "ma27"
     #solver.options["print_timing_statistics"] = "yes"
     results = solver.solve(m, tee=true)
 
