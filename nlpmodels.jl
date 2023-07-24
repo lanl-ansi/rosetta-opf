@@ -310,8 +310,7 @@ function solve_opf(file_name)
     end
 
     model_variables = length(var_init)
-    cx = similar(con_lbs)
-    model_constraints = length(opf_constraints!(cx, var_init))
+    model_constraints = length(opf_constraints!(similar(con_lbs), var_init))
     println("variables: $(model_variables), $(length(var_lb)), $(length(var_ub))")
     println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
 
