@@ -125,7 +125,7 @@ function solve_opf(file_name)
 
     @assert var_idx == length(var_init)+1
     #total_callback_time = 0.0
-    function opf_objective(x; ref = ref)
+    function opf_objective(x)
         #start = time()
         cost = 0.0
         for (i,gen) in ref[:gen]
@@ -136,25 +136,7 @@ function solve_opf(file_name)
         return cost
     end
 
-    function opf_constraints!(
-        cx,
-        x;
-        ref = ref,
-        var_lookup = var_lookup,
-        bus_pd = bus_pd,
-        bus_qd = bus_qd,
-        bus_gs = bus_gs,
-        bus_bs = bus_bs,
-        br_g = br_g,
-        br_b = br_b,
-        br_tr = br_tr,
-        br_ti = br_ti,
-        br_ttm = br_ttm,
-        br_g_fr = br_g_fr,
-        br_b_fr = br_b_fr,
-        br_g_to = br_g_to,
-        br_b_to = br_b_to,
-    )
+    function opf_constraints!(cx, x)
         #start = time()
         ### Note this example beaks ForwardDiff ###
         # con_vals = Float64[]
