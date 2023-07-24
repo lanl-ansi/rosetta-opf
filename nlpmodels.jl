@@ -138,16 +138,6 @@ function solve_opf(file_name)
 
     function opf_constraints!(cx, x)
         #start = time()
-        ### Note this example beaks ForwardDiff ###
-        # con_vals = Float64[]
-
-        # for (i,bus) in ref[:ref_buses]
-        #     #@constraint(model, va[i] == 0)
-        #     va = x[var_lookup["va_$(i)"]]
-        #     push!(con_vals, va)
-        # end
-        ##########
-
 
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -177,13 +167,6 @@ function solve_opf(file_name)
         #         sum(load["pd"] for load in bus_loads) -
         #         sum(shunt["gs"] for shunt in bus_shunts)*vm[i]^2
         #     )
-        # power_balance_p_con = [
-        #   sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) -
-        #   bus_pd[i] -
-        #   bus_gs[i]*vm[i]^2 -
-        #   sum(p[a] for a in ref[:bus_arcs][i])
-        #   for (i,bus) in ref[:bus]
-        #]
         for (i, bus) in ref[:bus]
             k += 1
             cx[k] = sum(pg[j] for j in ref[:bus_gens][i]; init=0.0) - bus_pd[i] - bus_gs[i]*vm[i]^2 - sum(p[a] for a in ref[:bus_arcs][i])
@@ -195,13 +178,6 @@ function solve_opf(file_name)
         #         sum(load["qd"] for load in bus_loads) +
         #         sum(shunt["bs"] for shunt in bus_shunts)*vm[i]^2
         #     )
-        #power_balance_q_con = [
-        #   sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) -
-        #   bus_qd[i] +
-        #   bus_bs[i]*vm[i]^2 -
-        #   sum(q[a] for a in ref[:bus_arcs][i])
-        #   for (i,bus) in ref[:bus]
-        #]
         for (i, bus) in ref[:bus]
             k += 1
             cx[k] = sum(qg[j] for j in ref[:bus_gens][i]; init=0.0) - bus_qd[i] + bus_bs[i]*vm[i]^2 - sum(q[a] for a in ref[:bus_arcs][i])
@@ -209,13 +185,6 @@ function solve_opf(file_name)
 
 
         # @NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        #power_flow_p_from_con = [
-        #   (br_g[l]+br_g_fr[l])/br_ttm[l]*vm_fr[l]^2 +
-        #   (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-        #   (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-        #   p[(l,i,j)]
-        #   for (l,i,j) in ref[:arcs_from]
-        #]
         for (l,i,j) in ref[:arcs_from]
             k += 1
             cx[k] = (br_g[l]+br_g_fr[l])/br_ttm[l]*vm_fr[l]^2 +
@@ -225,13 +194,6 @@ function solve_opf(file_name)
         end
 
         # @NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        #power_flow_p_to_con = [
-        #   (br_g[l]+br_g_to[l])*vm_to[l]^2 +
-        #   (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-        #   (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-        #   p[(l,i,j)]
-        #   for (l,i,j) in ref[:arcs_to]
-        #]
         for (l,i,j) in ref[:arcs_to]
             k += 1
             cx[k] = (br_g[l]+br_g_to[l])*vm_to[l]^2 +
@@ -241,13 +203,6 @@ function solve_opf(file_name)
         end
 
         # @NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        #power_flow_q_from_con = [
-        #   -(br_b[l]+br_b_fr[l])/br_ttm[l]*vm_fr[l]^2 -
-        #   (-br_b[l]*br_tr[l]-br_g[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*cos(va_fr[l]-va_to[l])) +
-        #   (-br_g[l]*br_tr[l]+br_b[l]*br_ti[l])/br_ttm[l]*(vm_fr[l]*vm_to[l]*sin(va_fr[l]-va_to[l])) -
-        #   q[(l,i,j)]
-        #   for (l,i,j) in ref[:arcs_from]
-        #]
         for (l,i,j) in ref[:arcs_from]
             k += 1
             cx[k] = -(br_b[l]+br_b_fr[l])/br_ttm[l]*vm_fr[l]^2 -
@@ -257,13 +212,6 @@ function solve_opf(file_name)
         end
 
         # @NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        #power_flow_q_to_con = [
-        #   -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
-        #   (-br_b[l]*br_tr[l]+br_g[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*cos(va_to[l]-va_fr[l])) +
-        #   (-br_g[l]*br_tr[l]-br_b[l]*br_ti[l])/br_ttm[l]*(vm_to[l]*vm_fr[l]*sin(va_to[l]-va_fr[l])) -
-        #   q[(l,i,j)]
-        #   for (l,i,j) in ref[:arcs_to]
-        #]
         for (l,i,j) in ref[:arcs_to]
             k += 1
             cx[k] = -(br_b[l]+br_b_to[l])*vm_to[l]^2 -
@@ -274,30 +222,18 @@ function solve_opf(file_name)
 
         # @constraint(model, va_fr - va_to <= branch["angmax"])
         # @constraint(model, va_fr - va_to >= branch["angmin"])
-        #power_flow_vad_con = [
-        #   va_fr[l] - va_to[l]
-        #   for (l,i,j) in ref[:arcs_from]
-        #]
         for (l,i,j) in ref[:arcs_from]
             k += 1
             cx[k] = va_fr[l] - va_to[l]
         end
 
         # @constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
-        #power_flow_mva_from_con = [
-        #   p[(l,i,j)]^2 + q[(l,i,j)]^2
-        #   for (l,i,j) in ref[:arcs_from]
-        #]
         for (l,i,j) in ref[:arcs_from]
             k += 1
             cx[k] = p[(l,i,j)]^2 + q[(l,i,j)]^2
         end
 
         # @constraint(model, p_to^2 + q_to^2 <= branch["rate_a"]^2)
-        #power_flow_mva_to_con = [
-        #   p[(l,i,j)]^2 + q[(l,i,j)]^2
-        #   for (l,i,j) in ref[:arcs_to]
-        #]
         for (l,i,j) in ref[:arcs_to]
             k += 1
             cx[k] = p[(l,i,j)]^2 + q[(l,i,j)]^2
@@ -386,12 +322,10 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    #output = ipopt(nlp, print_level=0)
     output = NLPModelsIpopt.ipopt(nlp)
     cost = output.objective
     feasible = (output.primal_feas <= 1e-6)
-    #println(output)
-
+    
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
