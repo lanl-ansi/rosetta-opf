@@ -321,7 +321,8 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    output = NLPModelsIpopt.ipopt(nlp)
+    #output = NLPModelsIpopt.ipopt(nlp)
+    output = NLPModelsIpopt.ipopt(nlp, linear_solver = "ma27")
     cost = output.objective
     feasible = (output.primal_feas <= 1e-6)
     
