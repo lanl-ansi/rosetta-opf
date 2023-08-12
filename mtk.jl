@@ -121,7 +121,8 @@ function solve_opf(file_name)
         push!(cons, q_to ~ -(b + b_to) * vm_to^2 - (-b * tr + g * ti) / ttm * (vm_to * vm_fr * cos(va_to - va_fr)) + (-g * tr - b * ti) / ttm * (vm_to * vm_fr * sin(va_to - va_fr)))
 
         # Voltage angle difference limit
-        push!(cons, abs(va_fr - va_to) ≲ branch["angmax"])
+        push!(cons, va_fr - va_to ≲ branch["angmax"])
+        push!(cons, branch["angmin"] ≲ va_fr - va_to)
 
         # Apparent power limit, from side and to side
         push!(cons, p_fr^2 + q_fr^2 ≲ branch["rate_a"]^2)
