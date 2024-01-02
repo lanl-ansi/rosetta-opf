@@ -94,8 +94,6 @@ for (i,branch) in ref[:branch]
 
     # Voltage angle difference limit
     @constraint(model, branch["angmin"] <= va_fr - va_to <= branch["angmax"])
-    #@constraint(model, va_fr - va_to <= branch["angmax"])
-    #@constraint(model, va_fr - va_to >= branch["angmin"])
 
     # Apparent power limit, from side and to side
     @constraint(model, p_fr^2 + q_fr^2 <= branch["rate_a"]^2)
