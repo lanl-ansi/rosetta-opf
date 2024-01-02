@@ -84,12 +84,12 @@ function solve_opf(file_name)
         b_to = branch["b_to"]
 
         # From side of the branch flow
-        JuMP.@NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        JuMP.@NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        JuMP.@constraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        JuMP.@constraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
 
         # To side of the branch flow
-        JuMP.@NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        JuMP.@NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        JuMP.@constraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        JuMP.@constraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
 
         # Voltage angle difference limit
         JuMP.@constraint(model, branch["angmin"] <= va_fr - va_to <= branch["angmax"])
@@ -115,13 +115,13 @@ function solve_opf(file_name)
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-    nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
-    total_callback_time =
-        nlp_block.evaluator.eval_objective_timer +
-        nlp_block.evaluator.eval_objective_gradient_timer +
-        nlp_block.evaluator.eval_constraint_timer +
-        nlp_block.evaluator.eval_constraint_jacobian_timer +
-        nlp_block.evaluator.eval_hessian_lagrangian_timer
+    # nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
+    # total_callback_time =
+    #     nlp_block.evaluator.eval_objective_timer +
+    #     nlp_block.evaluator.eval_objective_gradient_timer +
+    #     nlp_block.evaluator.eval_constraint_timer +
+    #     nlp_block.evaluator.eval_constraint_jacobian_timer +
+    #     nlp_block.evaluator.eval_hessian_lagrangian_timer
 
     println("")
     println("\033[1mSummary\033[0m")
@@ -134,14 +134,14 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
-    println("      callbacks: $(total_callback_time)")
-    println("")
-    println("   callbacks time:")
-    println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
-    println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
-    println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
-    println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
-    println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
+    # println("      callbacks: $(total_callback_time)")
+    # println("")
+    # println("   callbacks time:")
+    # println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
+    # println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
+    # println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
+    # println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
+    # println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
     
     return Dict(
@@ -154,7 +154,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        "time_callbacks" => total_callback_time,
+        #"time_callbacks" => total_callback_time,
     )
 end
 
