@@ -116,13 +116,13 @@ function solve_opf(file_name)
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-    # nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
-    # total_callback_time =
-    #     nlp_block.evaluator.eval_objective_timer +
-    #     nlp_block.evaluator.eval_objective_gradient_timer +
-    #     nlp_block.evaluator.eval_constraint_timer +
-    #     nlp_block.evaluator.eval_constraint_jacobian_timer +
-    #     nlp_block.evaluator.eval_hessian_lagrangian_timer
+    nlp_block = JuMP.MOI.get(JuMP.unsafe_backend(model), JuMP.MOI.NLPBlock())
+    total_callback_time =
+        nlp_block.evaluator.eval_objective_timer +
+        nlp_block.evaluator.eval_objective_gradient_timer +
+        nlp_block.evaluator.eval_constraint_timer +
+        nlp_block.evaluator.eval_constraint_jacobian_timer +
+        nlp_block.evaluator.eval_hessian_lagrangian_timer
 
     println("")
     println("\033[1mSummary\033[0m")
@@ -135,14 +135,14 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
-    # println("      callbacks: $(total_callback_time)")
-    # println("")
-    # println("   callbacks time:")
-    # println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
-    # println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
-    # println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
-    # println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
-    # println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
+    println("      callbacks: $(total_callback_time)")
+    println("")
+    println("   callbacks time:")
+    println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
+    println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
+    println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
+    println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
+    println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
     
     return Dict(
@@ -155,7 +155,7 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        #"time_callbacks" => total_callback_time,
+        "time_callbacks" => total_callback_time,
     )
 end
 

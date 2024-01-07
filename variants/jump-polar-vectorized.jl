@@ -240,7 +240,7 @@ solve_time = time() - time_start
     Analysis
 =#
 
-nlp_block = MOI.get(acopf, MOI.NLPBlock())
+nlp_block = MOI.get(unsafe_backend(acopf), MOI.NLPBlock())
 
 println("")
 println("\033[1mSummary\033[0m")
@@ -250,10 +250,10 @@ println("   pkg time..: $(pkg_load_time)")
 println("   data time.: $(data_load_time)")
 println("   build time: $(model_build_time)")
 println("   solve time: $(solve_time)")
-# println("   callbacks time:")
-# println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
-# println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
-# println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
-# println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
-# println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
+println("   callbacks time:")
+println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
+println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
+println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
+println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
+println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
 println("")
