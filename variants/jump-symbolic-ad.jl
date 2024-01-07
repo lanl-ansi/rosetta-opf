@@ -25,6 +25,7 @@ function solve_opf(file_name)
 
     model = JuMP.Model(Ipopt.Optimizer)
     #JuMP.set_optimizer_attribute(model, "print_level", 0)
+    JuMP.set_optimizer_attribute(model, JuMP.MOI.AutomaticDifferentiationBackend(), MathOptSymbolicAD.DefaultBackend())
 
     JuMP.@variable(model, va[i in keys(ref[:bus])])
     JuMP.@variable(model, ref[:bus][i]["vmin"] <= vm[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
@@ -108,7 +109,7 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
-    JuMP.optimize!(model; _differentiation_backend = MathOptSymbolicAD.DefaultBackend())
+    JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
 
