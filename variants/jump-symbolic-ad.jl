@@ -10,6 +10,14 @@ import Ipopt
 import JuMP
 import MathOptSymbolicAD
 
+# tmp work aronud until next MOI release
+function JuMP.MOI.Utilities.map_indices(
+    ::F,
+    backend::JuMP.MOI.Nonlinear.AbstractAutomaticDifferentiation,
+) where {F<:Function}
+    return backend
+end
+
 function solve_opf(file_name)
     time_data_start = time()
 
