@@ -198,9 +198,9 @@ acopf = Model(Ipopt.Optimizer)
 # Angle difference
 @expression(acopf, φ, E' * va)
 # The nonlinear basis encodes all the nonlinearities in the problem.
-@NLconstraint(acopf, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
-@NLconstraint(acopf, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
-@NLconstraint(acopf, [i=1:nbus],  ψq[i] == vm[i]^2)
+@constraint(acopf, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
+@constraint(acopf, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
+@constraint(acopf, [i=1:nbus],  ψq[i] == vm[i]^2)
 
 # eq(11b): recover power flow equations with sparse operations
 @constraint(acopf, τ_eq - Cg_eq * pg + M_eq * [ψcos; ψsin; ψq] .== 0)
@@ -240,7 +240,7 @@ solve_time = time() - time_start
     Analysis
 =#
 
-nlp_block = MOI.get(acopf, MOI.NLPBlock())
+nlp_block = MOI.get(unsafe_backend(acopf), MOI.NLPBlock())
 
 println("")
 println("\033[1mSummary\033[0m")
