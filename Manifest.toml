@@ -1293,9 +1293,9 @@ version = "0.2.4"
 
 [[deps.PowerModels]]
 deps = ["InfrastructureModels", "JSON", "JuMP", "LinearAlgebra", "Memento", "NLsolve", "SparseArrays"]
-git-tree-sha1 = "d20d24947082b010d09bcb9b18469b8854ef6dea"
+git-tree-sha1 = "ebb09c118540aa4f15a0f5a157969ef4a578b6f0"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
-version = "0.20.0"
+version = "0.20.1"
 
 [[deps.PreallocationTools]]
 deps = ["Adapt", "ArrayInterface", "ForwardDiff"]

@@ -2,21 +2,13 @@
 ###### AC-OPF using JuMP ######
 #
 # implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
-# This uses https://github.com/odow/MathOptSymbolicAD.jl instead of the built-in AD
-# library
+# This uses https://github.com/odow/MathOptSymbolicAD.jl instead of the built-in AD library
+#
 
 import PowerModels
 import Ipopt
 import JuMP
 import MathOptSymbolicAD
-
-# tmp work aronud until next MOI release
-function JuMP.MOI.Utilities.map_indices(
-    ::F,
-    backend::JuMP.MOI.Nonlinear.AbstractAutomaticDifferentiation,
-) where {F<:Function}
-    return backend
-end
 
 function solve_opf(file_name)
     time_data_start = time()
