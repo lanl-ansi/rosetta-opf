@@ -2,8 +2,8 @@
 ###### AC-OPF using JuMP ######
 #
 # implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
-# This uses https://github.com/odow/MathOptSymbolicAD.jl instead of the built-in AD
-# library
+# This uses https://github.com/odow/MathOptSymbolicAD.jl instead of the built-in AD library
+#
 
 import PowerModels
 import Ipopt
@@ -25,6 +25,7 @@ function solve_opf(file_name)
 
     model = JuMP.Model(Ipopt.Optimizer)
     #JuMP.set_optimizer_attribute(model, "print_level", 0)
+    JuMP.set_optimizer_attribute(model, JuMP.MOI.AutomaticDifferentiationBackend(), MathOptSymbolicAD.DefaultBackend())
 
     JuMP.@variable(model, va[i in keys(ref[:bus])])
     JuMP.@variable(model, ref[:bus][i]["vmin"] <= vm[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
@@ -84,12 +85,12 @@ function solve_opf(file_name)
         b_to = branch["b_to"]
 
         # From side of the branch flow
-        JuMP.@NLconstraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
-        JuMP.@NLconstraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        JuMP.@constraint(model, p_fr ==  (g+g_fr)/ttm*vm_fr^2 + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-b*tr-g*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
+        JuMP.@constraint(model, q_fr == -(b+b_fr)/ttm*vm_fr^2 - (-b*tr-g*ti)/ttm*(vm_fr*vm_to*cos(va_fr-va_to)) + (-g*tr+b*ti)/ttm*(vm_fr*vm_to*sin(va_fr-va_to)) )
 
         # To side of the branch flow
-        JuMP.@NLconstraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
-        JuMP.@NLconstraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        JuMP.@constraint(model, p_to ==  (g+g_to)*vm_to^2 + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-b*tr+g*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
+        JuMP.@constraint(model, q_to == -(b+b_to)*vm_to^2 - (-b*tr+g*ti)/ttm*(vm_to*vm_fr*cos(va_to-va_fr)) + (-g*tr-b*ti)/ttm*(vm_to*vm_fr*sin(va_to-va_fr)) )
 
         # Voltage angle difference limit
         JuMP.@constraint(model, branch["angmin"] <= va_fr - va_to <= branch["angmax"])
@@ -108,14 +109,14 @@ function solve_opf(file_name)
 
 
     time_solve_start = time()
-    JuMP.optimize!(model; _differentiation_backend = MathOptSymbolicAD.DefaultBackend())
+    JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-    nlp_block = JuMP.MOI.get(model, JuMP.MOI.NLPBlock())
+    nlp_block = JuMP.MOI.get(JuMP.unsafe_backend(model), JuMP.MOI.NLPBlock())
     total_callback_time =
         nlp_block.evaluator.eval_objective_timer +
         nlp_block.evaluator.eval_objective_gradient_timer +
