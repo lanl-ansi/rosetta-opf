@@ -1,8 +1,12 @@
 #!/usr/bin/env julia
 ###### AC-OPF using Optimization.jl ######
 #
-# This is a variant of the Optimization.jl that uses a ConcreteStructs data structure 
-# and the  ReverseDiff, SparseDiffTools for the AD system.
+# This is a variant of the Optimization.jl that uses a ConcreteStructs data
+# structure for the network data and the ReverseDiff, SparseDiffTools for the
+# AD system.
+#
+# This is based on the SciMLBenchmarks version on 01/16/2024,
+# https://github.com/SciML/SciMLBenchmarks.jl/blob/master/benchmarks/OptimizationFrameworks/optimal_powerflow.jmd
 #
 
 import PowerModels
