@@ -512,7 +512,7 @@ function solve_opf(file_name)
     data_load_time = time() - start
     prob = build_opf_optimization_prob(dataset)
     model_build_time = time() - start - data_load_time
-    sol = Optimization.solve(prob, Ipopt.Optimizer())
+    sol = Optimization.solve(prob, OptimizationMOI.MOI.OptimizerWithAttributes(Ipopt.Optimizer, "linear_solver" => "ma27"))
     total_time = time() - start
     solve_time = total_time - model_build_time - data_load_time
     model_variables = length(prob.u0)

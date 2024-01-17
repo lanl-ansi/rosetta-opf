@@ -337,7 +337,7 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    sol = Optimization.solve(prob, Ipopt.Optimizer())
+    sol = Optimization.solve(prob, OptimizationMOI.MOI.OptimizerWithAttributes(Ipopt.Optimizer, "linear_solver" => "ma27"))
     cost = sol.minimum
     feasible = (sol.retcode == Optimization.SciMLBase.ReturnCode.Success)
     #println(sol.u) # solution vector
