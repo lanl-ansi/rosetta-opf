@@ -1,3 +1,10 @@
+#!/usr/bin/env julia
+###### AC-OPF using Optimization.jl ######
+#
+# This is a variant of the Optimization.jl that uses a ConcreteStructs data structure 
+# and the  ReverseDiff, SparseDiffTools for the AD system.
+#
+
 import PowerModels
 import ConcreteStructs
 import Optimization
@@ -534,6 +541,6 @@ function solve_opf(file_name)
 end
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/../data/pglib_opf_case5_pjm.m")
 end
 
