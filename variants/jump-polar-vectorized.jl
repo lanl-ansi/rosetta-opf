@@ -28,10 +28,11 @@
 # the formulation adopted in PowerModels.jl.
 #
 
-using LinearAlgebra
-using SparseArrays
-using JuMP, Ipopt
-using PowerModels
+import LinearAlgebra
+import SparseArrays
+import JuMP
+import Ipopt
+import PowerModels
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -110,12 +111,12 @@ function solve_opf(file_name)
     #=
         Build incidence matrices encoding the problem's topology
     =#
-    Cg = sparse(gen2bus, 1:ngen, ones(ngen), nbus, ngen)
-    Cl = sparse(load2bus, 1:nloads, ones(nloads), nbus, nloads)
-    Cf = sparse(f_bus, 1:nlines, ones(nlines), nbus, nlines)
-    Ct = sparse(t_bus, 1:nlines, ones(nlines), nbus, nlines)
+    Cg = SparseArrays.sparse(gen2bus, 1:ngen, ones(ngen), nbus, ngen)
+    Cl = SparseArrays.sparse(load2bus, 1:nloads, ones(nloads), nbus, nloads)
+    Cf = SparseArrays.sparse(f_bus, 1:nlines, ones(nlines), nbus, nlines)
+    Ct = SparseArrays.sparse(t_bus, 1:nlines, ones(nlines), nbus, nlines)
     E = Cf - Ct
-    Ysh = sparse(b_sh, b_sh, shunts, nbus, nbus)
+    Ysh = SparseArrays.sparse(b_sh, b_sh, shunts, nbus, nbus)
 
     #=
         Build admittance matrices
@@ -130,18 +131,18 @@ function solve_opf(file_name)
     Ytf = - Ys ./ tap
 
     i = [1:nlines; 1:nlines]
-    Yf = sparse(i, [f_bus; t_bus], [Yff; Yft], nlines, nbus)
-    Yt = sparse(i, [f_bus; t_bus], [Ytf; Ytt], nlines, nbus)
+    Yf = SparseArrays.sparse(i, [f_bus; t_bus], [Yff; Yft], nlines, nbus)
+    Yt = SparseArrays.sparse(i, [f_bus; t_bus], [Ytf; Ytt], nlines, nbus)
     Ybus = Cf * Yf + Ct * Yt + Ysh
 
-    Yc = Cf * Diagonal(Yft) + Ct * Diagonal(Ytf)
-    Ys = Cf * Diagonal(Yft) - Ct * Diagonal(Ytf)
-    Yd = Cf * Diagonal(Yff) * Cf' + Ct * Diagonal(Ytt) * Ct' + Ysh
+    Yc = Cf * LinearAlgebra.Diagonal(Yft) + Ct * LinearAlgebra.Diagonal(Ytf)
+    Ys = Cf * LinearAlgebra.Diagonal(Yft) - Ct * LinearAlgebra.Diagonal(Ytf)
+    Yd = Cf * LinearAlgebra.Diagonal(Yff) * Cf' + Ct * LinearAlgebra.Diagonal(Ytt) * Ct' + Ysh
 
-    yff = Diagonal(Yff)
-    yft = Diagonal(Yft)
-    ytf = Diagonal(Ytf)
-    ytt = Diagonal(Ytt)
+    yff = LinearAlgebra.Diagonal(Yff)
+    yft = LinearAlgebra.Diagonal(Yft)
+    ytf = LinearAlgebra.Diagonal(Ytf)
+    ytt = LinearAlgebra.Diagonal(Ytt)
 
     #=
         Compact matrices
@@ -157,7 +158,7 @@ function solve_opf(file_name)
 
     # Eq (7): Power flow (equality)
     M_eq = M[[pv; pq; nbus .+ pq], :]
-    Cg_eq = [Cg[pv, :] ; spzeros(2 * npq, ngen)]
+    Cg_eq = [Cg[pv, :] ; SparseArrays.spzeros(2 * npq, ngen)]
     τ_eq = [Cl[[pv; pq], :] * pd; Cl[pq, :] * qd]
     # Eq (8): Power flow (inequality)
     M_ineq = M[[ref; nbus .+ ref; nbus .+ pv], :]
@@ -168,55 +169,55 @@ function solve_opf(file_name)
     #=
         Build JuMP model
     =#
-    model = Model(Ipopt.Optimizer)
+    model = JuMP.Model(Ipopt.Optimizer)
     #set_optimizer_attribute(model, "print_level", 0)
 
     ## 1. Variables
 
-    @variable(model, vmin[i] <= vm[i=1:nbus] <= vmax[i], start=vm0[i])
-    @variable(model, va[i=1:nbus], start=va0[i])
-    @variable(model, pgmin[i] <= pg[i=1:ngen] <= pgmax[i], start=pg0[i])
+    JuMP.@variable(model, vmin[i] <= vm[i=1:nbus] <= vmax[i], start=vm0[i])
+    JuMP.@variable(model, va[i=1:nbus], start=va0[i])
+    JuMP.@variable(model, pgmin[i] <= pg[i=1:ngen] <= pgmax[i], start=pg0[i])
     # nonlinear basis (encodes all the nonlinearities in the problem)
-    @variable(model, ψsin[i=1:nlines])
-    @variable(model, ψcos[i=1:nlines])
-    @variable(model, ψq[i=1:nbus])
+    JuMP.@variable(model, ψsin[i=1:nlines])
+    JuMP.@variable(model, ψcos[i=1:nlines])
+    JuMP.@variable(model, ψq[i=1:nbus])
     # line flow
-    @variable(model, sfp[i = 1:nlines])
-    @variable(model, stp[i = 1:nlines])
-    @variable(model, sfq[i = 1:nlines])
-    @variable(model, stq[i = 1:nlines])
+    JuMP.@variable(model, sfp[i = 1:nlines])
+    JuMP.@variable(model, stp[i = 1:nlines])
+    JuMP.@variable(model, sfq[i = 1:nlines])
+    JuMP.@variable(model, stq[i = 1:nlines])
 
     ## 2. Constraints
 
-    @constraint(model, va[ref] .== 0)
+    JuMP.@constraint(model, va[ref] == 0)
     # Angle difference
-    @expression(model, φ, E' * va)
+    JuMP.@expression(model, φ, E' * va)
     # The nonlinear basis encodes all the nonlinearities in the problem.
-    @constraint(model, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
-    @constraint(model, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
-    @constraint(model, [i=1:nbus],  ψq[i] == vm[i]^2)
+    JuMP.@constraint(model, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
+    JuMP.@constraint(model, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
+    JuMP.@constraint(model,   [i=1:nbus],   ψq[i] == vm[i]^2)
 
     # eq(11b): recover power flow equations with sparse operations
-    @constraint(model, τ_eq - Cg_eq * pg + M_eq * [ψcos; ψsin; ψq] .== 0)
+    JuMP.@constraint(model, τ_eq - Cg_eq * pg + M_eq * [ψcos; ψsin; ψq] .== 0)
 
     # eq(11c) - eq(20): active power bounds on slack + reactive power bounds
-    @constraint(model, pmin .<= M_ineq * [ψcos; ψsin; ψq] .+ τ_ineq .<= pmax)
+    JuMP.@constraint(model, pmin .<= M_ineq * [ψcos; ψsin; ψq] .+ τ_ineq .<= pmax)
 
     # Line-flow constraints
     # eq(11e) - eq(20)
-    @constraint(model, sfp .== Lfp * [ψcos; ψsin; ψq])
-    @constraint(model, sfq .== Lfq * [ψcos; ψsin; ψq])
-    @constraint(model, stp .== Ltp * [ψcos; ψsin; ψq])
-    @constraint(model, stq .== Ltq * [ψcos; ψsin; ψq])
-    @constraint(model, sfp.^2 .+ sfq.^2  .<= sline_max.^2)
-    @constraint(model, stp.^2 .+ stq.^2  .<= sline_max.^2)
+    JuMP.@constraint(model, sfp .== Lfp * [ψcos; ψsin; ψq])
+    JuMP.@constraint(model, sfq .== Lfq * [ψcos; ψsin; ψq])
+    JuMP.@constraint(model, stp .== Ltp * [ψcos; ψsin; ψq])
+    JuMP.@constraint(model, stq .== Ltq * [ψcos; ψsin; ψq])
+    JuMP.@constraint(model, sfp.^2 .+ sfq.^2 .<= sline_max.^2)
+    JuMP.@constraint(model, stp.^2 .+ stq.^2 .<= sline_max.^2)
 
     # Recover active power generation at slack node
-    @constraint(model, pg[refgen] .== M_ineq[1:1, :] * [ψcos; ψsin; ψq] .+ τ_ineq[1:1])
+    JuMP.@constraint(model, pg[refgen] .== M_ineq[1:1, :] * [ψcos; ψsin; ψq] .+ τ_ineq[1:1])
 
     ## 3. Objective
 
-    @objective(model, Min, dot(c2, pg.^2) + dot(c1, pg) + sum(c0))
+    JuMP.@objective(model, Min, LinearAlgebra.dot(c2, pg.^2) + LinearAlgebra.dot(c1, pg) + sum(c0))
 
     model_variables = JuMP.num_variables(model)
 
@@ -232,7 +233,7 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    optimize!(model)
+    JuMP.optimize!(model)
     cost = JuMP.objective_value(model)
     feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
 
@@ -243,7 +244,7 @@ function solve_opf(file_name)
         Analysis
     =#
 
-    nlp_block = MOI.get(unsafe_backend(model), MOI.NLPBlock())
+    nlp_block = JuMP.MOI.get(JuMP.unsafe_backend(model), JuMP.MOI.NLPBlock())
     total_callback_time =
         nlp_block.evaluator.eval_objective_timer +
         nlp_block.evaluator.eval_objective_gradient_timer +
