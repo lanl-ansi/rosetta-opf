@@ -168,61 +168,61 @@ function solve_opf(file_name)
     #=
         Build JuMP model
     =#
-    acopf = Model(Ipopt.Optimizer)
+    model = Model(Ipopt.Optimizer)
     #set_optimizer_attribute(model, "print_level", 0)
 
     ## 1. Variables
 
-    @variable(acopf, vmin[i] <= vm[i=1:nbus] <= vmax[i], start=vm0[i])
-    @variable(acopf, va[i=1:nbus], start=va0[i])
-    @variable(acopf, pgmin[i] <= pg[i=1:ngen] <= pgmax[i], start=pg0[i])
+    @variable(model, vmin[i] <= vm[i=1:nbus] <= vmax[i], start=vm0[i])
+    @variable(model, va[i=1:nbus], start=va0[i])
+    @variable(model, pgmin[i] <= pg[i=1:ngen] <= pgmax[i], start=pg0[i])
     # nonlinear basis (encodes all the nonlinearities in the problem)
-    @variable(acopf, ψsin[i=1:nlines])
-    @variable(acopf, ψcos[i=1:nlines])
-    @variable(acopf, ψq[i=1:nbus])
+    @variable(model, ψsin[i=1:nlines])
+    @variable(model, ψcos[i=1:nlines])
+    @variable(model, ψq[i=1:nbus])
     # line flow
-    @variable(acopf, sfp[i = 1:nlines])
-    @variable(acopf, stp[i = 1:nlines])
-    @variable(acopf, sfq[i = 1:nlines])
-    @variable(acopf, stq[i = 1:nlines])
+    @variable(model, sfp[i = 1:nlines])
+    @variable(model, stp[i = 1:nlines])
+    @variable(model, sfq[i = 1:nlines])
+    @variable(model, stq[i = 1:nlines])
 
     ## 2. Constraints
 
-    @constraint(acopf, va[ref] .== 0)
+    @constraint(model, va[ref] .== 0)
     # Angle difference
-    @expression(acopf, φ, E' * va)
+    @expression(model, φ, E' * va)
     # The nonlinear basis encodes all the nonlinearities in the problem.
-    @constraint(acopf, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
-    @constraint(acopf, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
-    @constraint(acopf, [i=1:nbus],  ψq[i] == vm[i]^2)
+    @constraint(model, [i=1:nlines], ψsin[i] == vm[f_bus[i]] * vm[t_bus[i]] * sin(φ[i]))
+    @constraint(model, [i=1:nlines], ψcos[i] == vm[f_bus[i]] * vm[t_bus[i]] * cos(φ[i]))
+    @constraint(model, [i=1:nbus],  ψq[i] == vm[i]^2)
 
     # eq(11b): recover power flow equations with sparse operations
-    @constraint(acopf, τ_eq - Cg_eq * pg + M_eq * [ψcos; ψsin; ψq] .== 0)
+    @constraint(model, τ_eq - Cg_eq * pg + M_eq * [ψcos; ψsin; ψq] .== 0)
 
     # eq(11c) - eq(20): active power bounds on slack + reactive power bounds
-    @constraint(acopf, pmin .<= M_ineq * [ψcos; ψsin; ψq] .+ τ_ineq .<= pmax)
+    @constraint(model, pmin .<= M_ineq * [ψcos; ψsin; ψq] .+ τ_ineq .<= pmax)
 
     # Line-flow constraints
     # eq(11e) - eq(20)
-    @constraint(acopf, sfp .== Lfp * [ψcos; ψsin; ψq])
-    @constraint(acopf, sfq .== Lfq * [ψcos; ψsin; ψq])
-    @constraint(acopf, stp .== Ltp * [ψcos; ψsin; ψq])
-    @constraint(acopf, stq .== Ltq * [ψcos; ψsin; ψq])
-    @constraint(acopf, sfp.^2 .+ sfq.^2  .<= sline_max.^2)
-    @constraint(acopf, stp.^2 .+ stq.^2  .<= sline_max.^2)
+    @constraint(model, sfp .== Lfp * [ψcos; ψsin; ψq])
+    @constraint(model, sfq .== Lfq * [ψcos; ψsin; ψq])
+    @constraint(model, stp .== Ltp * [ψcos; ψsin; ψq])
+    @constraint(model, stq .== Ltq * [ψcos; ψsin; ψq])
+    @constraint(model, sfp.^2 .+ sfq.^2  .<= sline_max.^2)
+    @constraint(model, stp.^2 .+ stq.^2  .<= sline_max.^2)
 
     # Recover active power generation at slack node
-    @constraint(acopf, pg[refgen] .== M_ineq[1:1, :] * [ψcos; ψsin; ψq] .+ τ_ineq[1:1])
+    @constraint(model, pg[refgen] .== M_ineq[1:1, :] * [ψcos; ψsin; ψq] .+ τ_ineq[1:1])
 
     ## 3. Objective
 
-    @objective(acopf, Min, dot(c2, pg.^2) + dot(c1, pg) + sum(c0))
+    @objective(model, Min, dot(c2, pg.^2) + dot(c1, pg) + sum(c0))
 
-    model_variables = JuMP.num_variables(acopf)
+    model_variables = JuMP.num_variables(model)
 
     # for consistency with other solvers, skip the variable bounds in the constraint count
-    non_nl_constraints = sum(JuMP.num_constraints(acopf, ft, st) for (ft, st) in JuMP.list_of_constraint_types(acopf) if ft != JuMP.VariableRef)
-    model_constraints = JuMP.num_nonlinear_constraints(acopf) + non_nl_constraints
+    non_nl_constraints = sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model) if ft != JuMP.VariableRef)
+    model_constraints = JuMP.num_nonlinear_constraints(model) + non_nl_constraints
 
     model_build_time = time() - time_model_start
 
@@ -232,9 +232,9 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    optimize!(acopf)
-    cost = JuMP.objective_value(acopf)
-    feasible = (JuMP.termination_status(acopf) == JuMP.LOCALLY_SOLVED)
+    optimize!(model)
+    cost = JuMP.objective_value(model)
+    feasible = (JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED)
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
@@ -243,7 +243,7 @@ function solve_opf(file_name)
         Analysis
     =#
 
-    nlp_block = MOI.get(unsafe_backend(acopf), MOI.NLPBlock())
+    nlp_block = MOI.get(unsafe_backend(model), MOI.NLPBlock())
     total_callback_time =
         nlp_block.evaluator.eval_objective_timer +
         nlp_block.evaluator.eval_objective_gradient_timer +
