@@ -167,6 +167,7 @@ end
     ]
         include(joinpath(dirname(@__DIR__), "$framework.jl"))
         @testset "$case" for case in [
+            "opf_warmup",
             "case5_pjm",
             "case14_ieee",
             "case24_ieee_rts",
