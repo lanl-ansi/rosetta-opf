@@ -35,17 +35,13 @@ import Ipopt
 import PowerModels
 
 function solve_opf(file_name)
+    ### Data Processing ###
     time_data_start = time()
 
     data = PowerModels.parse_file(file_name)
     PowerModels.standardize_cost_terms!(data, order=2)
     PowerModels.calc_thermal_limits!(data)
     ref = PowerModels.build_ref(data)[:it][:pm][:nw][0]
-
-    data_load_time = time() - time_data_start
-
-
-    time_model_start = time()
 
     gen = data["gen"]
     bus = data["bus"]
@@ -97,9 +93,7 @@ function solve_opf(file_name)
     c1 = Float64[gen["$i"]["cost"][2] for i in 1:ngen]
     c0 = Float64[gen["$i"]["cost"][3] for i in 1:ngen]
 
-    #=
-        Buses' classification
-    =#
+    ### Bus classification ###
     pv = findall(isequal(2), bustype)
     pq = findall(isequal(1), bustype)
     ref = findall(isequal(3), bustype)
@@ -108,9 +102,7 @@ function solve_opf(file_name)
     npq = length(pq)
     nref = length(ref)
 
-    #=
-        Build incidence matrices encoding the problem's topology
-    =#
+    ### Build incidence matrices encoding the problem's topology ###
     Cg = SparseArrays.sparse(gen2bus, 1:ngen, ones(ngen), nbus, ngen)
     Cl = SparseArrays.sparse(load2bus, 1:nloads, ones(nloads), nbus, nloads)
     Cf = SparseArrays.sparse(f_bus, 1:nlines, ones(nlines), nbus, nlines)
@@ -118,12 +110,9 @@ function solve_opf(file_name)
     E = Cf - Ct
     Ysh = SparseArrays.sparse(b_sh, b_sh, shunts, nbus, nbus)
 
-    #=
-        Build admittance matrices
-        (take expressions from MATPOWER)
-    =#
-    Ys = br_stat ./ (br_r + 1im * br_x)       # series admittance
-    Bc = br_stat .* br_b                      # line charging susceptance
+    ### Build admittance matrices (take expressions from MATPOWER) ###
+    Ys = br_stat ./ (br_r + 1im * br_x)    # series admittance
+    Bc = br_stat .* br_b                   # line charging susceptance
     tap = tap .* exp.(1im*pi/180 .* shift) # add phase shifters
     Ytt = Ys .+ 1im .* Bc ./ 2.0
     Yff = Ytt ./ (tap .* conj.(tap))
@@ -144,9 +133,7 @@ function solve_opf(file_name)
     ytf = LinearAlgebra.Diagonal(Ytf)
     ytt = LinearAlgebra.Diagonal(Ytt)
 
-    #=
-        Compact matrices
-    =#
+    ### Compact matrices ###
     # Eq (5): power flow equations
     M = [ real(Yc)  imag(Ys)  real(Yd);
          -imag(Yc)  real(Ys) -imag(Yd)]
@@ -166,9 +153,13 @@ function solve_opf(file_name)
     pmin = [Cg[ref, :] * pgmin; Cg[[ref;pv], :] *qgmin]
     pmax = [Cg[ref, :] * pgmax; Cg[[ref;pv], :] *qgmax]
 
-    #=
-        Build JuMP model
-    =#
+    data_load_time = time() - time_data_start
+
+
+    ### Build JuMP model ###
+
+    time_model_start = time()
+
     model = JuMP.Model(Ipopt.Optimizer)
     #set_optimizer_attribute(model, "print_level", 0)
 
@@ -227,9 +218,8 @@ function solve_opf(file_name)
 
     model_build_time = time() - time_model_start
 
-    #=
-        Resolution
-    =#
+
+    ### Resolution ###
 
     time_solve_start = time()
 
@@ -240,9 +230,8 @@ function solve_opf(file_name)
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-    #=
-        Analysis
-    =#
+
+    ### Analysis ###
 
     nlp_block = JuMP.MOI.get(JuMP.unsafe_backend(model), JuMP.MOI.NLPBlock())
     total_callback_time =
