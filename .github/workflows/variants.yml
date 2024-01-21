@@ -1,0 +1,33 @@
+name: variants
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  test:
+    name: ${{ matrix.variant }} - ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: ['jump-nl', 'jump-symbolic-ad', 'optimization-cs-asrd']
+        version: ['1']
+        os: [ubuntu-latest]
+        arch: [x64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: ${{ matrix.version }}
+          arch: ${{ matrix.arch }}
+      - name: install
+        shell: julia --color=yes --project=variants {0}
+        run: |
+          using Pkg
+          Pkg.instantiate()
+      - name: test
+        env:
+          MODELING_FRAMEWORK: ${{ matrix.variant }}
+        run: julia --color=yes --project=variants variants/runtests.jl
