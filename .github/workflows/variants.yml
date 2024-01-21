@@ -28,6 +28,6 @@ jobs:
           using Pkg
           Pkg.instantiate()
       - name: test
-        with:
+        env:
           MODELING_FRAMEWORK: ${{ matrix.variant }}
         run: julia --color=yes --project=variants variants/runtests.jl
