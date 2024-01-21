@@ -102,8 +102,7 @@ function solve_opf(file_name)
 
     model_variables = JuMP.num_variables(model)
     # for consistency with other solvers, skip the variable bounds in the constraint count
-    non_nl_constraints = sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model) if ft != JuMP.VariableRef)
-    model_constraints = JuMP.num_nonlinear_constraints(model) + non_nl_constraints
+    model_constraints = JuMP.num_constraints(model; count_variable_in_set_constraints = false)
 
     model_build_time = time() - time_model_start
 
@@ -144,7 +143,7 @@ function solve_opf(file_name)
     println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
     println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     println("")
-    
+
     return Dict(
         "case" => file_name,
         "variables" => model_variables,
