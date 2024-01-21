@@ -50,6 +50,23 @@ Consequently, there is some code replication between implementations.
 - `debug/*`: scripts for debugging NLP modeling layers
 - `variants/*`: additional variants of the AC-OPF problem
 
+### Running an AC-OPF Case File
+
+By convention each AC-OPF stand-alone file implements a function called `solve_opf` that requires one argument, `file_name`. The argument should be a path to an AC-OPF case file that is compatible with PowerModels' `parse_file` function (usually a [MATPOWER](https://matpower.org/) case file). The `solve_opf` function parses the case file, builds the suitable AC-OPF optimization problem, solves it with Ipopt (or the next-best available algorithm) and returns a dictionary of basic information about the solution process. This dictionary includes items such as,
+- `case`: the name of the file that was solved
+- `feasible`: if the modeling layer determined the solution at the competition of the solve process stratifies the model constraints 
+- `cost`: evaluation of the objective function at the competition of the solve process
+- `time_total`: the total wall-clock time of the `solve_opf` function in seconds
+
+The standard steps for testing the `solve_opf` function on a specific AC-OPF data file are,
+```
+julia --project=.                               # Start Julia with the project environment provided with this repo
+julia> include("jump.jl")                       # Load the solve_opf function from one of the example files
+julia> solve_opf("data/pglib_opf_case5_pjm.m")  # Run the solve_opf function on a specific AC-OPF case file
+```
+Note that due to Julia's JIT, it is very likely that the first call to `solve_opf` will take significantly more time than the second call.
+
+
 ## License
 
 This code is provided under a BSD license as part of the Grid Optimization Competition Solvers project, C19076.
