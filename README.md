@@ -2,6 +2,7 @@
 
 The AC Optimal Power Flow problem (AC-OPF) is one of the most foundational optimization problems that arises in the design and operations of power networks.
 Mathematically the AC-OPF is a large-scale, sparse, non-convex nonlinear continuous optimization problem. 
+The models make heavy use of scalar indexing in the definition of the nonlinear functions, and most operations are simple floating point operations (`+`, `*`, `cos`, and `sin`) applied to scalar data.
 In practice AC-OPF is most often solved to local optimality conditions using interior point methods.
 This project proposes AC-OPF as _proxy-application_ for testing the viability of different nonlinear optimization frameworks, as performant solutions to AC-OPF has proven to be a necessary (but not always sufficient) condition for solving a wide range of industrial network optimization tasks.
 
@@ -21,6 +22,17 @@ This project proposes AC-OPF as _proxy-application_ for testing the viability of
 At present this project is focused on comparing NLP modeling layers that are available in the Julia programming langue.  However, other modeling layers may be considered in the future.
 
 This work is not intended for comparing different nonlinear optimization algorithms, which are often independent of the NLP modeling layer. Consequently, the [Ipopt](https://github.com/jump-dev/Ipopt.jl) solver is used as a standard NLP algorithm whenever it is accessible from the modeling layer.
+
+### Comparison with SciMLBenchmarks
+
+All framework implementations use PowerModels.jl to read input `.m` data files into non-concrete dictionaries, from which the objective and constraint functions are defined.
+Reading the data into non-concrete dictionaries simulates a very common non-expert user of NLP tooling, but biases the performance results in favor of symbolic front-ends which perform additional optimizations on the objective and constraint functions before performing the optimization.
+
+Moreover, the `total time` reported by `rosetta-opf` includes Julia's compilation time.
+This biases performance against frameworks which generate large amounts of new code that requires compilation.
+We do not attempt to remove the compilation overhead, for example, by using a tool like [PackageCompiler.jl](https://github.com/JuliaLang/PackageCompiler.jl).
+
+For a variation of `rosetta-opf` that removes these factors to focus on core implementation differences of the numerical backends, see the [SciMLBenchmarks adaptation](https://docs.sciml.ai/SciMLBenchmarksOutput/stable/OptimizationFrameworks/optimal_powerflow/).
 
 ## Mathematical and Data Models
 This work adopts the mathematical model and data format that is used in the IEEE PES benchmark library for AC-OPF, [PGLib-OPF](https://github.com/power-grid-lib/pglib-opf). The Julia package [PowerModels](https://github.com/lanl-ansi/PowerModels.jl) is used for parsing the problem data files and making standard data transformations.
