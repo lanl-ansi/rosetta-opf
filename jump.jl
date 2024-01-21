@@ -27,13 +27,22 @@ function solve_opf(file_name)
 
     JuMP.@variable(model, va[i in keys(ref[:bus])])
     JuMP.@variable(model, ref[:bus][i]["vmin"] <= vm[i in keys(ref[:bus])] <= ref[:bus][i]["vmax"], start=1.0)
-
+    for i in keys(ref[:bus])
+        JuMP.set_name(va[i], "va_$i")
+        JuMP.set_name(vm[i], "vm_$i")
+    end
     JuMP.@variable(model, ref[:gen][i]["pmin"] <= pg[i in keys(ref[:gen])] <= ref[:gen][i]["pmax"])
     JuMP.@variable(model, ref[:gen][i]["qmin"] <= qg[i in keys(ref[:gen])] <= ref[:gen][i]["qmax"])
-
+    for i in keys(ref[:gen])
+        JuMP.set_name(pg[i], "pg_$i")
+        JuMP.set_name(qg[i], "qg_$i")
+    end
     JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= p[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
     JuMP.@variable(model, -ref[:branch][l]["rate_a"] <= q[(l,i,j) in ref[:arcs]] <= ref[:branch][l]["rate_a"])
-
+    for (l, i, j) in ref[:arcs]
+        JuMP.set_name(p[(l, i, j)], "p_$(l)_$(i)_$(j)")
+        JuMP.set_name(q[(l, i, j)], "q_$(l)_$(i)_$(j)")
+    end
     JuMP.@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
 
     for (i,bus) in ref[:ref_buses]
@@ -156,6 +165,9 @@ function solve_opf(file_name)
         "time_build" => model_build_time,
         "time_solve" => solve_time,
         "time_callbacks" => total_callback_time,
+        "solution" => Dict(
+            JuMP.name(v) => JuMP.value(v) for v in JuMP.all_variables(model)
+        ),
     )
 end
 
