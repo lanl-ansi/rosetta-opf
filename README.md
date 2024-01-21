@@ -52,10 +52,10 @@ Consequently, there is some code replication between implementations.
 
 ### Running an AC-OPF Case File
 
-Each implementation file implements a function called `solve_opf` with one argument `file_name`. The argument should be a path to AC-OPF case file that is compatible with PowerModels' `parse_file` function (usually a [MATPOWER](https://matpower.org/) case file). The `solve_opf` function parses the data file, builds the suitable AC-OPF optimization problem, solves it with Ipopt (or the next-best available algorithm) and returns a dictionary of high level data about the solution process. This includes information such as the,
+By convention each AC-OPF stand-alone file implements a function called `solve_opf` that requires one argument, `file_name`. The argument should be a path to an AC-OPF case file that is compatible with PowerModels' `parse_file` function (usually a [MATPOWER](https://matpower.org/) case file). The `solve_opf` function parses the case file, builds the suitable AC-OPF optimization problem, solves it with Ipopt (or the next-best available algorithm) and returns a dictionary of basic information about the solution process. This includes items such as the,
 - `case`: the name of the file that was solved
-- `feasible`: if the modeling layer deemed the solution at the competition of the solve feasible
-- `cost`: evaluation of the objective function at the competition of the solve
+- `feasible`: if the modeling layer determined the solution at the competition of the solve process to be feasible
+- `cost`: evaluation of the objective function at the competition of the solve process
 - `time_total`: the total wall-clock time of the `solve_opf` function
 
 The standard steps for testing the `solve_opf` function on a specific AC-OPF data file are,
