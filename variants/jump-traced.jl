@@ -1,8 +1,22 @@
 #!/usr/bin/env julia
-###### AC-OPF using JuMP.jl ######
+###### AC-OPF using JuMP.jl and function tracing ######
 #
-# This is a variant of JuMP.jl to show that there is nothing special about
-# JuMP's macros for this problem.
+# This file builds a JuMP model using function tracing:
+# https://jump.dev/JuMP.jl/stable/manual/nonlinear/#Function-tracing
+#
+# Function tracing can be useful if you have an existing Julia function that
+# implements the objective or constraints. However, it has a number of
+# limitations that restrict what the function may do. As one example, you cannot
+# use Boolean comparisons to create branches like
+# `if x >= 0 return x^2 else return 0 end`.
+#
+# The goal of this variant is to show that type-unstable Julia code can be
+# efficiently converted into a symbolic form and analysed to compute sparse
+# derivatives. This is similar in intent to modeling frameworks like
+# Optimization.jl when it uses the ModelingToolkit backend.
+#
+# Although we provide this variant, the preferred way to use JuMP is the
+# macro-based approach shown in the /jump.jl file.
 #
 
 import PowerModels
