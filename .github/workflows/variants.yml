@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: ['jump-nl', 'jump-smybolic-ad', 'optimization-cs-asrd']
+        variant: ['jump-nl', 'jump-symbolic-ad', 'optimization-cs-asrd']
         version: ['1']
         os: [ubuntu-latest]
         arch: [x64]
