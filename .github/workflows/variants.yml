@@ -27,6 +27,7 @@ jobs:
         run: |
           using Pkg
           Pkg.instantiate()
-      - run: julia --color=yes --project=variants variants/runtests.jl
+      - name: test
         with:
           MODELING_FRAMEWORK: ${{ matrix.variant }}
+        run: julia --color=yes --project=variants variants/runtests.jl
