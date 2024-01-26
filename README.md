@@ -50,7 +50,7 @@ In this formulation the complex voltage terms expand into the following expressi
 ### AC-OPF Implementations
 Each of these files is designed to be _stand-alone_ and can be tested with minimal package dependencies.
 Consequently, there is some code replication between implementations.
-- `examodels.jl`: implemenation using [ExaModels](https://github.com/exanauts/ExaModels.jl)
+- `examodels.jl`: implementation using [ExaModels](https://github.com/exanauts/ExaModels.jl)
 - `jump.jl`: implementation using [JuMP](https://github.com/jump-dev/JuMP.jl)
 - `nlpmodels.jl`: implementation using [ADNLPModels](https://github.com/JuliaSmoothOptimizers/ADNLPModels.jl)
 - `nonconvex.jl`: implementation using [Nonconvex](https://github.com/JuliaNonconvex/Nonconvex.jl)
