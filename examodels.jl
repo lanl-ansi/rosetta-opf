@@ -199,23 +199,11 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    result = NLPModelsIpopt.ipopt(model)
+    result = NLPModelsIpopt.ipopt(model; linear_solver="ma27")
     
     cost = result.objective
 
-    x = result.solution
-    g = ExaModels.NLPModels.cons(model, x)
-    
-    constraint_violation = sum(
-        mapreduce.( x->max(x,0), max, [
-            x - model.meta.uvar,
-            model.meta.lvar - x,
-            g - model.meta.ucon,
-            model.meta.lcon - g
-        ])
-    )
-
-    feasible = constraint_violation <= constraint_tol
+    feasible = result.status == :first_order
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start

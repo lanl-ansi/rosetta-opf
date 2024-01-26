@@ -4,12 +4,12 @@ include("validator.jl")
 
 @testset "Rosetta OPF" begin
     @testset "$framework" for framework in [
+        "examodels",
         "jump",
         "nlpmodels",
         "nonconvex",
         # "optim", # does not converge to feasible solution
         "optimization",
-        "examodels",
     ]
         include(joinpath(dirname(@__DIR__), "$framework.jl"))
         @testset "$case" for case in [
