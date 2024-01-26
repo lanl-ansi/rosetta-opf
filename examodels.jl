@@ -250,6 +250,25 @@ function solve_opf(file_name)
     # println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
     # println("")
 
+    va_sol = ExaModels.solution(result, va)
+    va_dict = Dict("va_$(i)" => va_sol[busdict[i]] for (i,b) in enumerate(data.bus))
+    
+    vm_sol = ExaModels.solution(result, vm)
+    vm_dict = Dict("vm_$(i)" => vm_sol[busdict[i]] for (i,b) in enumerate(data.bus))
+
+    pg_sol = ExaModels.solution(result, pg)
+    pg_dict = Dict("pg_$(i)" => pg_sol[gendict[i]] for (i,b) in enumerate(data.gen))
+
+    qg_sol = ExaModels.solution(result, qg)
+    qg_dict = Dict("qg_$(i)" => qg_sol[gendict[i]] for (i,b) in enumerate(data.gen))
+
+    p_sol = ExaModels.solution(result, p)
+    p_dict = Dict("p_$(write_out_tuple(ref[:arcs][i]))" => p_sol[i] for (i,b) in enumerate(data.arc))
+
+    q_sol = ExaModels.solution(result, q)
+    q_dict = Dict("q_$(write_out_tuple(ref[:arcs][i]))" => q_sol[i] for (i,b) in enumerate(data.arc))
+
+    println(ref[:arcs])
     return Dict(
         "case" => file_name,
         "variables" => model.meta.nvar,
@@ -261,9 +280,17 @@ function solve_opf(file_name)
         "time_build" => model_build_time,
         "time_solve" => solve_time,
         # "time_callbacks" => total_callback_time,
-        "solution" => x,
+        "solution" => Dict(
+            va_dict...,
+            vm_dict...,
+            pg_dict...,
+            qg_dict...,
+            p_dict...,
+            q_dict...),
     )
 end
+
+write_out_tuple((i,j,k)) = "$(i)_$(j)_$(k)"
 
 if isinteractive() == false
     solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")

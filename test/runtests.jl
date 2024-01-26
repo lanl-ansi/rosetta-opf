@@ -9,6 +9,7 @@ include("validator.jl")
         "nonconvex",
         # "optim", # does not converge to feasible solution
         "optimization",
+        "examodels",
     ]
         include(joinpath(dirname(@__DIR__), "$framework.jl"))
         @testset "$case" for case in [
