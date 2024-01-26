@@ -55,6 +55,7 @@ Consequently, there is some code replication between implementations.
 - `nonconvex.jl`: implementation using [Nonconvex](https://github.com/JuliaNonconvex/Nonconvex.jl)
 - `optim.jl`: implementation using [Optim](https://github.com/JuliaNLSolvers/Optim.jl)
 - `optimization.jl`: implementation using [Optimization](https://github.com/SciML/Optimization.jl)
+- `examodels.jl`: implemenation using [ExaModels](https://github.com/exanauts/ExaModels.jl)
 
 ### Other Files
 - `data/*`: small example datasets
