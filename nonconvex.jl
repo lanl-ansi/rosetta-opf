@@ -99,7 +99,6 @@ function solve_opf(file_name)
         addvar!(model, "q_$(l)_$(i)_$(j)", -branch["rate_a"], branch["rate_a"], init=0.0) #q
     end
 
-
     # JuMP.@objective(model, Min, sum(gen["cost"][1]*pg[i]^2 + gen["cost"][2]*pg[i] + gen["cost"][3] for (i,gen) in ref[:gen]))
     function opf_objective(x::OrderedDict)
         cost = 0.0
@@ -262,10 +261,10 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        #"time_callbacks" => TBD,
+        "solution" => Dict(k => v for (k, v) in result.minimizer),
     )
 end
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/data/opf_warmup.m")
 end
