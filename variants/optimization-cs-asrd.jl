@@ -540,7 +540,8 @@ function solve_opf(file_name)
         "time_total" => total_time,
         "time_data" => data_load_time,
         "time_build" => model_build_time,
-        "time_solve" => solve_time
+        "time_solve" => solve_time,
+        "solution" => Dict(k => sol.u[v] for (k, v) in dataset.var_lookup),
     )
 end
 
