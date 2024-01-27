@@ -102,6 +102,7 @@ end
 
 set_optimizer(model, Optim.Optimizer)
 set_optimizer_attribute(model, "method", IPNewton())
+set_optimizer_attribute(model, "show_trace", true)
 
 model_build_time = time() - time_start
 
