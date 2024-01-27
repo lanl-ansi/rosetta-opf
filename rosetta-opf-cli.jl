@@ -37,7 +37,7 @@ elseif args["solver"] == "pyomo"
 elseif args["solver"] == "optimization-cs-asrd"
     include("variants/optimization-cs-asrd.jl")
 elseif args["solver"] == "examodels"
-    include("variants/examodels.jl")
+    include("examodels.jl")
 else
     error("unknwon solver type $(args["solver"])")
 end
