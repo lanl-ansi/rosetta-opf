@@ -4,6 +4,7 @@ include("validator.jl")
 
 @testset "Rosetta OPF" begin
     @testset "$framework" for framework in [
+        "examodels",
         "jump",
         "nlpmodels",
         "nonconvex",
