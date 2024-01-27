@@ -369,10 +369,10 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        #"time_callbacks" => TBD,
+        "solution" => Dict(k => sol.u[v] for (k, v) in var_lookup),
     )
 end
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/data/opf_warmup.m")
 end

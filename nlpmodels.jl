@@ -324,7 +324,7 @@ function solve_opf(file_name)
     output = NLPModelsIpopt.ipopt(nlp)
     cost = output.objective
     feasible = (output.primal_feas <= 1e-6)
-    
+
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
@@ -353,10 +353,10 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        #"time_callbacks" => TBD,
+        "solution" => Dict(k => output.solution[v] for (k, v) in var_lookup),
     )
 end
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/data/opf_warmup.m")
 end

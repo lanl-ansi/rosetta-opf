@@ -1,13 +1,27 @@
 #!/usr/bin/env julia
-###### AC-OPF using Optim ######
+###### AC-OPF using JuMP.jl and function tracing ######
 #
-# implementation reference: https://julianlsolvers.github.io/Optim.jl/stable/#examples/generated/ipnewton_basics/
-# currently does not converge to a feasible point, root cause in unclear
-# `debug/optim-debug.jl` can be used to confirm it will converge if given a suitable starting point
+# This file builds a JuMP model using function tracing:
+# https://jump.dev/JuMP.jl/stable/manual/nonlinear/#Function-tracing
+#
+# Function tracing can be useful if you have an existing Julia function that
+# implements the objective or constraints. However, it has a number of
+# limitations that restrict what the function may do. As one example, you cannot
+# use Boolean comparisons to create branches like
+# `if x >= 0 return x^2 else return 0 end`.
+#
+# The goal of this variant is to show that type-unstable Julia code can be
+# efficiently converted into a symbolic form and analysed to compute sparse
+# derivatives. This is similar in intent to modeling frameworks like
+# Optimization.jl when it uses the ModelingToolkit backend.
+#
+# Although we provide this variant, the preferred way to use JuMP is the
+# macro-based approach shown in the /jump.jl file.
 #
 
 import PowerModels
-import Optim
+import JuMP
+import Ipopt
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -92,15 +106,13 @@ function solve_opf(file_name)
     end
 
     for (i,gen) in ref[:gen]
-        #push!(var_init, 0.0) #pg
-        push!(var_init, (gen["pmax"]+gen["pmin"])/2) # non-standard start
+        push!(var_init, 0.0) #pg
         push!(var_lb, gen["pmin"])
         push!(var_ub, gen["pmax"])
         var_lookup["pg_$(i)"] = var_idx
         var_idx += 1
 
-        #push!(var_init, 0.0) #qg
-        push!(var_init, (gen["qmax"]+gen["qmin"])/2) # non-standard start
+        push!(var_init, 0.0) #qg
         push!(var_lb, gen["qmin"])
         push!(var_ub, gen["qmax"])
         var_lookup["qg_$(i)"] = var_idx
@@ -124,6 +136,7 @@ function solve_opf(file_name)
     end
 
     @assert var_idx == length(var_init)+1
+
     #total_callback_time = 0.0
     function opf_objective(x)
         #start = time()
@@ -136,7 +149,7 @@ function solve_opf(file_name)
         return cost
     end
 
-    function opf_constraints(c,x)
+    function opf_constraints(ret, x)
         #start = time()
         va = Dict(i => x[var_lookup["va_$(i)"]] for (i,bus) in ref[:bus])
         vm = Dict(i => x[var_lookup["vm_$(i)"]] for (i,bus) in ref[:bus])
@@ -238,8 +251,7 @@ function solve_opf(file_name)
            p[(l,i,j)]^2 + q[(l,i,j)]^2
            for (l,i,j) in ref[:arcs_to]
         ]
-
-        c .= [
+        ret .= [
             va_con...,
             power_balance_p_con...,
             power_balance_q_con...,
@@ -251,8 +263,8 @@ function solve_opf(file_name)
             power_flow_mva_from_con...,
             power_flow_mva_to_con...,
         ]
+        return ret
         #total_callback_time += time() - start
-        return c
     end
 
     con_lbs = Float64[]
@@ -264,23 +276,17 @@ function solve_opf(file_name)
         push!(con_ubs, 0.0)
     end
 
-
     #power_balance_p_con
     for (i,bus) in ref[:bus]
         push!(con_lbs, 0.0)
         push!(con_ubs, 0.0)
-        #push!(con_lbs, -Inf)
-        #push!(con_ubs, Inf)
     end
 
     #power_balance_q_con
     for (i,bus) in ref[:bus]
         push!(con_lbs, 0.0)
         push!(con_ubs, 0.0)
-        #push!(con_lbs, -Inf)
-        #push!(con_ubs, Inf)
     end
-
 
     #power_flow_p_from_con
     for (l,i,j) in ref[:arcs_from]
@@ -327,47 +333,34 @@ function solve_opf(file_name)
         push!(con_ubs, branch["rate_a"]^2)
     end
 
-    model_variables = length(var_init)
-    model_constraints = length(opf_constraints(zeros(length(con_lbs)), var_init))
-    println("variables: $(model_variables), $(length(var_lb)), $(length(var_ub))")
-    println("constraints: $(model_constraints), $(length(con_lbs)), $(length(con_ubs))")
-
-    df = Optim.TwiceDifferentiable(opf_objective, var_init)
-    dfc = Optim.TwiceDifferentiableConstraints(opf_constraints, var_lb, var_ub, con_lbs, con_ubs)
+    model = JuMP.Model(Ipopt.Optimizer)
+    JuMP.@variable(model, var_lb[i] <= x[i = 1:length(var_lb)] <= var_ub[i], start = var_init[i])
+    JuMP.@objective(model, Min, opf_objective(x))
+    cons = Vector{Any}(undef, length(con_lbs))
+    cons = opf_constraints(cons, x)
+    JuMP.@constraint(model, con_lbs .<= cons .<= con_ubs)
 
     model_build_time = time() - time_model_start
 
+
     time_solve_start = time()
 
-    options = Optim.Options(show_trace=true)
-
-    # NOTE: had to change initial guess to be an interior point, otherwise getting NaN values
-    res = Optim.optimize(df, dfc, var_init, Optim.IPNewton(), options)
-    #res = Optim.optimize(df, dfc, var_init, Optim.LBFGS(), options) #  StackOverflowError:
-    #res = Optim.optimize(df, dfc, var_init, Optim.NelderMead(), options) #  StackOverflowError:
-    display(res)
-
-    sol = res.minimizer
-    cost = res.minimum
+    JuMP.optimize!(model)
+    cost = JuMP.objective_value(model)
+    feasible = JuMP.termination_status(model) == JuMP.LOCALLY_SOLVED
 
     solve_time = time() - time_solve_start
     total_time = time() - time_data_start
 
-
-    # NOTE: confirmed these constraint violations can be eliminated
-    # if a better starting point is used
-    sol_eval = opf_constraints(zeros(length(con_lbs)), sol)
-    vio_lb = [max(v,0) for v in (con_lbs .- sol_eval)]
-    vio_ub = [max(v,0) for v in (sol_eval .- con_ubs)]
-    const_vio = vio_lb .+ vio_ub
-    #println(const_vio)
-    println("total constraint violation: $(sum(const_vio))")
-    constraint_tol = 1e-6
-    feasible = (sum(const_vio) <= constraint_tol)
-
-    if !feasible
-        @warn "Optim optimize failed to satify the problem constraints"
-    end
+    model_variables = JuMP.num_variables(model)
+    model_constraints = sum(JuMP.num_constraints(model, ft, st) for (ft, st) in JuMP.list_of_constraint_types(model) if ft != JuMP.VariableRef)
+    nlp_block = JuMP.MOI.get(JuMP.unsafe_backend(model), JuMP.MOI.NLPBlock())
+    total_callback_time =
+        nlp_block.evaluator.eval_objective_timer +
+        nlp_block.evaluator.eval_objective_gradient_timer +
+        nlp_block.evaluator.eval_constraint_timer +
+        nlp_block.evaluator.eval_constraint_jacobian_timer +
+        nlp_block.evaluator.eval_hessian_lagrangian_timer
 
     println("")
     println("\033[1mSummary\033[0m")
@@ -380,10 +373,16 @@ function solve_opf(file_name)
     println("     data time.: $(data_load_time)")
     println("     build time: $(model_build_time)")
     println("     solve time: $(solve_time)")
-    # println("      callbacks: $(total_callback_time)")
+    println("      callbacks: $(total_callback_time)")
     println("")
-
-
+    println("   callbacks time:")
+    println("   * obj.....: $(nlp_block.evaluator.eval_objective_timer)")
+    println("   * grad....: $(nlp_block.evaluator.eval_objective_gradient_timer)")
+    println("   * cons....: $(nlp_block.evaluator.eval_constraint_timer)")
+    println("   * jac.....: $(nlp_block.evaluator.eval_constraint_jacobian_timer)")
+    println("   * hesslag.: $(nlp_block.evaluator.eval_hessian_lagrangian_timer)")
+    println("")
+    sol = JuMP.value.(JuMP.all_variables(model))
     return Dict(
         "case" => file_name,
         "variables" => model_variables,
@@ -394,10 +393,11 @@ function solve_opf(file_name)
         "time_data" => data_load_time,
         "time_build" => model_build_time,
         "time_solve" => solve_time,
-        #"time_callbacks" => TBD,
+        "time_callbacks" => total_callback_time,
+        "solution" => Dict(k => sol[v] for (k, v) in var_lookup),
     )
 end
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/opf_warmup.m")
+    solve_opf("$(@__DIR__)/../data/opf_warmup.m")
 end
