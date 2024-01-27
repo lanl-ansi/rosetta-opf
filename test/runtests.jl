@@ -12,11 +12,12 @@ include("validator.jl")
     ]
         include(joinpath(dirname(@__DIR__), "$framework.jl"))
         @testset "$case" for case in [
-            "case5_pjm",
-            "case14_ieee",
-            "case24_ieee_rts",
+            "opf_warmup.m",
+            "pglib_opf_case5_pjm.m",
+            "pglib_opf_case14_ieee.m",
+            "pglib_opf_case24_ieee_rts.m",
         ]
-            test_case = joinpath(dirname(@__DIR__), "data/pglib_opf_$case.m")
+            test_case = joinpath(dirname(@__DIR__), "data", case)
             result = solve_opf(test_case)
             validate_result(test_case, result)
         end
