@@ -2,7 +2,7 @@
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "f82d4f25fcfe31a45d52dae8a3020a2e2d59cb05"
+project_hash = "cd5dc3619dbd4706aae06218300bd701d57f54a0"
 
 [[deps.ADNLPModels]]
 deps = ["ColPack", "ForwardDiff", "LinearAlgebra", "NLPModels", "Requires", "ReverseDiff", "SparseArrays"]
@@ -1293,9 +1293,9 @@ version = "0.2.4"
 
 [[deps.PowerModels]]
 deps = ["InfrastructureModels", "JSON", "JuMP", "LinearAlgebra", "Memento", "NLsolve", "SparseArrays"]
-git-tree-sha1 = "ebb09c118540aa4f15a0f5a157969ef4a578b6f0"
+git-tree-sha1 = "82dc2524b633fdc459052f4ce28d67d62ffbb0db"
 uuid = "c36e90e8-916a-50a6-bd94-075b64ef4655"
-version = "0.20.1"
+version = "0.21.0"
 
 [[deps.PreallocationTools]]
 deps = ["Adapt", "ArrayInterface", "ForwardDiff"]
