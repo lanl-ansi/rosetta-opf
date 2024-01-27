@@ -197,7 +197,7 @@ function solve_opf(file_name)
 
     time_solve_start = time()
 
-    result = NLPModelsIpopt.ipopt(model)
+    result = NLPModelsIpopt.ipopt(model, linear_solver = "ma27")
 
     cost = result.objective
 

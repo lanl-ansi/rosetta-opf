@@ -16,7 +16,9 @@ end
 args = parse_args(s)
 
 
-if args["solver"] == "jump"
+if args["solver"] == "examodels"
+    include("examodels.jl")
+elseif args["solver"] == "jump"
     include("jump.jl")
 elseif args["solver"] == "nlpmodels"
     include("nlpmodels.jl")
@@ -26,6 +28,7 @@ elseif args["solver"] == "optim"
     include("optim.jl")
 elseif args["solver"] == "optimization"
     include("optimization.jl")
+
 elseif args["solver"] == "jump-nl"
     include("variants/jump-nl.jl")
 elseif args["solver"] == "jump-sad"
@@ -36,6 +39,7 @@ elseif args["solver"] == "pyomo"
     include("variants/pyomo.jl")
 elseif args["solver"] == "optimization-cs-asrd"
     include("variants/optimization-cs-asrd.jl")
+
 else
     error("unknwon solver type $(args["solver"])")
 end
