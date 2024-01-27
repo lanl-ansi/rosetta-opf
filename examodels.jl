@@ -237,16 +237,16 @@ function solve_opf(file_name)
     # println("")
 
     va_sol = ExaModels.solution(result, va)
-    va_dict = Dict("va_$(i)" => va_sol[busdict[i]] for (i,b) in enumerate(data.bus))
+    va_dict = Dict("va_$(i)" => va_sol[b.i] for (i,b) in enumerate(data.bus))
     
     vm_sol = ExaModels.solution(result, vm)
-    vm_dict = Dict("vm_$(i)" => vm_sol[busdict[i]] for (i,b) in enumerate(data.bus))
+    vm_dict = Dict("vm_$(i)" => vm_sol[b.i] for (i,b) in enumerate(data.bus))
 
     pg_sol = ExaModels.solution(result, pg)
-    pg_dict = Dict("pg_$(i)" => pg_sol[gendict[i]] for (i,b) in enumerate(data.gen))
+    pg_dict = Dict("pg_$(i)" => pg_sol[b.i] for (i,b) in enumerate(data.gen))
 
     qg_sol = ExaModels.solution(result, qg)
-    qg_dict = Dict("qg_$(i)" => qg_sol[gendict[i]] for (i,b) in enumerate(data.gen))
+    qg_dict = Dict("qg_$(i)" => qg_sol[b.i] for (i,b) in enumerate(data.gen))
 
     p_sol = ExaModels.solution(result, p)
     p_dict = Dict("p_$(write_out_tuple(ref[:arcs][i]))" => p_sol[i] for (i,b) in enumerate(data.arc))
