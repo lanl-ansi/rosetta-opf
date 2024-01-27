@@ -78,8 +78,7 @@ julia --project=.                               # Start Julia with the project e
 julia> include("jump.jl")                       # Load the solve_opf function from one of the example files
 julia> solve_opf("data/pglib_opf_case5_pjm.m")  # Run the solve_opf function on a specific AC-OPF case file
 ```
-Note that due to Julia's JIT, it is very likely that the first call to `solve_opf` will take significantly more time than the second call.
-
+Note that due to Julia's JIT, it is very likely that the first call to `solve_opf` will take significantly more time than the second call. The case file `data/opf_warmup.m` can be used to remove the bulk of overheads related to Julia's JIT when collecting precise runtime data on one of the `solve_opf` functions.
 
 ## License
 
