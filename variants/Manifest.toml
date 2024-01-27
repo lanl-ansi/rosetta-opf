@@ -2,12 +2,24 @@
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "468f2a414a958bc7fb8671d2955fd8128f6cca25"
+project_hash = "62a3ad2a11b98937b2ac5e2b46949d27ab8c85ac"
+
+[[deps.ADNLPModels]]
+deps = ["ColPack", "ForwardDiff", "LinearAlgebra", "NLPModels", "Requires", "ReverseDiff", "SparseArrays"]
+git-tree-sha1 = "998be23c2c7719476475b4e6d0444d84b9cb97aa"
+uuid = "54578032-b7ea-4c30-94aa-7cbd1cce6c9a"
+version = "0.7.0"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "41c37aa88889c171f1300ceac1313c06e891d245"
 uuid = "47edcb42-4c32-4615-8424-f2b9edc5f35b"
 version = "0.2.6"
+
+[[deps.AMD]]
+deps = ["LinearAlgebra", "SparseArrays", "SuiteSparse_jll"]
+git-tree-sha1 = "45a1272e3f809d36431e57ab22703c6896b8908f"
+uuid = "14f7f29c-3bd6-536c-9a0b-7339e30b5a3e"
+version = "0.5.3"
 
 [[deps.ASL_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -152,6 +164,18 @@ deps = ["TranscodingStreams", "Zlib_jll"]
 git-tree-sha1 = "cd67fc487743b2f0fd4380d4cbd3a24660d0eec8"
 uuid = "944b1d66-785c-5afd-91f1-9de20f533193"
 version = "0.7.3"
+
+[[deps.ColPack]]
+deps = ["ColPack_jll", "LinearAlgebra", "Random", "SparseArrays"]
+git-tree-sha1 = "83a23545e7969d8b21fb85271b9cd04c8e09d08b"
+uuid = "ffa27691-3a59-46ab-a8d4-551f45b8d401"
+version = "0.3.0"
+
+[[deps.ColPack_jll]]
+deps = ["Artifacts", "CompilerSupportLibraries_jll", "JLLWrappers", "Libdl", "Pkg"]
+git-tree-sha1 = "2a518018a2b888ba529e944d34d4bd84b54d652d"
+uuid = "f218ff0c-cb54-5151-80c4-c0f62c730ce6"
+version = "0.3.0+0"
 
 [[deps.Combinatorics]]
 git-tree-sha1 = "08c8b6831dc00bfea825826be0bc8336fc369860"
@@ -633,6 +657,12 @@ git-tree-sha1 = "8a6837ec02fe5fb3def1abc907bb802ef11a0729"
 uuid = "ba0b0d4f-ebba-5204-a429-3ac8c609bfb7"
 version = "0.9.5"
 
+[[deps.LDLFactorizations]]
+deps = ["AMD", "LinearAlgebra", "SparseArrays", "Test"]
+git-tree-sha1 = "70f582b446a1c3ad82cf87e62b878668beef9d13"
+uuid = "40e66cde-538c-5869-a4ad-c39174c6795b"
+version = "0.10.1"
+
 [[deps.LaTeXStrings]]
 git-tree-sha1 = "50901ebc375ed41dbf8058da26f9de442febbbec"
 uuid = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
@@ -731,6 +761,16 @@ version = "7.2.0"
 [[deps.LinearAlgebra]]
 deps = ["Libdl", "OpenBLAS_jll", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
+[[deps.LinearOperators]]
+deps = ["FastClosures", "LDLFactorizations", "LinearAlgebra", "Printf", "Requires", "SparseArrays", "TimerOutputs"]
+git-tree-sha1 = "58e2ca62646a62e18f86253b9c2a2d821c2d934b"
+uuid = "5c8ed15e-5a4c-59e4-a42b-c7e8811fb125"
+version = "2.6.0"
+weakdeps = ["ChainRulesCore"]
+
+    [deps.LinearOperators.extensions]
+    LinearOperatorsChainRulesCoreExt = "ChainRulesCore"
 
 [[deps.LinearSolve]]
 deps = ["ArrayInterface", "ConcreteStructs", "DocStringExtensions", "EnumX", "FastLapackInterface", "GPUArraysCore", "InteractiveUtils", "KLU", "Krylov", "Libdl", "LinearAlgebra", "MKL_jll", "PrecompileTools", "Preferences", "RecursiveFactorization", "Reexport", "SciMLBase", "SciMLOperators", "Setfield", "SparseArrays", "Sparspak", "StaticArraysCore", "UnPack"]
@@ -925,6 +965,18 @@ deps = ["LinearAlgebra", "SparseArrays", "Test"]
 git-tree-sha1 = "806eea990fb41f9b36f1253e5697aa645bf6a9f8"
 uuid = "d8a4904e-b15c-11e9-3269-09a3773c0cb0"
 version = "1.4.0"
+
+[[deps.NLPModels]]
+deps = ["FastClosures", "LinearAlgebra", "LinearOperators", "Printf", "SparseArrays"]
+git-tree-sha1 = "51b458add76a938917772ee661ffb9d59b4c7e5d"
+uuid = "a4795742-8479-5a88-8948-cc11e1c8c1a6"
+version = "0.20.0"
+
+[[deps.NLPModelsIpopt]]
+deps = ["Ipopt", "NLPModels", "SolverCore"]
+git-tree-sha1 = "fc840dec9e9d371e3747b2c5c85c2a58ed99d124"
+uuid = "f4238b75-b362-5c4c-b852-0801c9a21d71"
+version = "0.10.1"
 
 [[deps.NLSolversBase]]
 deps = ["DiffResults", "Distributed", "FiniteDiff", "ForwardDiff"]
@@ -1337,6 +1389,12 @@ version = "1.1.0"
 
 [[deps.Sockets]]
 uuid = "6462fe0b-24de-5631-8697-dd941f90decc"
+
+[[deps.SolverCore]]
+deps = ["LinearAlgebra", "NLPModels", "Printf"]
+git-tree-sha1 = "9fb0712d597d6598857ae50b7744df17b1137b38"
+uuid = "ff4d7338-4cf1-434d-91df-b86cb86fb843"
+version = "0.3.7"
 
 [[deps.SortingAlgorithms]]
 deps = ["DataStructures"]
