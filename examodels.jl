@@ -1,7 +1,7 @@
 #!/usr/bin/env julia
 ###### AC-OPF using ExaModels ######
 #
-# implementation reference: https://github.com/lanl-ansi/PowerModelsAnnex.jl/blob/master/src/model/ac-opf.jl
+# implementation reference: https://exanauts.github.io/ExaModels.jl/stable/guide/
 # only the built-in AD library is supported
 #
 
@@ -9,8 +9,6 @@ import PowerModels
 import ExaModels
 import NLPModelsIpopt
 import LinearAlgebra
-
-const constraint_tol = 1e-6
 
 function solve_opf(file_name)
     time_data_start = time()
@@ -200,7 +198,7 @@ function solve_opf(file_name)
     time_solve_start = time()
 
     result = NLPModelsIpopt.ipopt(model)
-    
+
     cost = result.objective
 
     feasible = result.status == :first_order
@@ -256,7 +254,6 @@ function solve_opf(file_name)
     q_sol = ExaModels.solution(result, q)
     q_dict = Dict("q_$(write_out_tuple(ref[:arcs][i]))" => q_sol[i] for (i,b) in enumerate(data.arc))
 
-    println(ref[:arcs])
     return Dict(
         "case" => file_name,
         "variables" => model.meta.nvar,
@@ -281,5 +278,5 @@ end
 write_out_tuple((i,j,k)) = "$(i)_$(j)_$(k)"
 
 if isinteractive() == false
-    solve_opf("$(@__DIR__)/data/pglib_opf_case5_pjm.m")
+    solve_opf("$(@__DIR__)/data/opf_warmup.m")
 end
