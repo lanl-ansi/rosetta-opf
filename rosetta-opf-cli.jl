@@ -28,10 +28,13 @@ elseif args["solver"] == "optim"
     include("optim.jl")
 elseif args["solver"] == "optimization"
     include("optimization.jl")
+
 elseif args["solver"] == "jump-nl"
     include("variants/jump-nl.jl")
 elseif args["solver"] == "jump-sad"
     include("variants/jump-symbolic-ad.jl")
+elseif args["solver"] == "jump-traced"
+    include("variants/jump-traced.jl")
 elseif args["solver"] == "casadi"
     include("variants/casadi.jl")
 elseif args["solver"] == "pyomo"
