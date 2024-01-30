@@ -2,7 +2,7 @@
 
 julia_version = "1.10.0"
 manifest_format = "2.0"
-project_hash = "00bfc230370ab2d06ed7ae6128542d1a85a5a113"
+project_hash = "2b196f4165a07d56342f51102f8b4a3a616731b5"
 
 [[deps.ADNLPModels]]
 deps = ["ColPack", "ForwardDiff", "LinearAlgebra", "NLPModels", "Requires", "ReverseDiff", "SparseArrays"]
@@ -444,22 +444,26 @@ uuid = "90fa49ef-747e-5e6f-a989-263ba693cf1a"
 version = "0.5.2"
 
 [[deps.ExaModels]]
-deps = ["NLPModels", "SolverCore"]
-git-tree-sha1 = "054b99d8f8d19a81a1fbbad74223af16f8012f2a"
+deps = ["NLPModels", "Printf", "SolverCore"]
+git-tree-sha1 = "606d0f6c1bcdda9ec7841a4892337b00814e2334"
 uuid = "1037b233-b668-4ce9-9b63-f9f681f55dd2"
-version = "0.4.2"
+version = "0.5.0"
 
     [deps.ExaModels.extensions]
     ExaModelsAMDGPU = "AMDGPU"
     ExaModelsCUDA = "CUDA"
+    ExaModelsJuMP = "JuMP"
     ExaModelsKernelAbstractions = "KernelAbstractions"
+    ExaModelsMOI = "MathOptInterface"
     ExaModelsOneAPI = "oneAPI"
     ExaModelsSpecialFunctions = "SpecialFunctions"
 
     [deps.ExaModels.weakdeps]
     AMDGPU = "21141c5a-9bdb-4563-92ae-f87d6854732e"
     CUDA = "052768ef-5323-5732-b1bb-66c8b64840ba"
+    JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
     KernelAbstractions = "63c18a36-062a-441e-b654-da1e3ab1ce7c"
+    MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
     SpecialFunctions = "276daf66-3868-5448-9aa4-cd146d93841b"
     oneAPI = "8f75cd03-7ff8-4ecb-9b8f-daf728133b1b"
 
