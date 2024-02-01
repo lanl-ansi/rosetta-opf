@@ -9,6 +9,7 @@ import PowerModels
 import ADNLPModels
 import ConcreteStructs
 import NLPModelsIpopt
+import Symbolics
 
 ConcreteStructs.@concrete struct DataRepresentation
     data
