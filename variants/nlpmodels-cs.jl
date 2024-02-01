@@ -9,6 +9,7 @@ import PowerModels
 import ADNLPModels
 import ConcreteStructs
 import NLPModelsIpopt
+import Symbolics
 
 ConcreteStructs.@concrete struct DataRepresentation
     data
@@ -494,6 +495,7 @@ function solve_opf(file_name)
     model = build_opf_optimization_prob(dataset)
     nlp = model.nlp
     model_build_time = time() - start - data_load_time
+    #output = NLPModelsIpopt.ipopt(nlp)
     output = NLPModelsIpopt.ipopt(nlp, linear_solver = "ma27")
     cost = output.objective
     feasible = (output.primal_feas <= 1e-6)
