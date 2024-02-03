@@ -4,7 +4,11 @@
 # implementation reference: https://juliasmoothoptimizers.github.io/ADNLPModels.jl/stable/tutorial/
 # other AD libraries can be considered: https://juliasmoothoptimizers.github.io/ADNLPModels.jl/stable/
 #
-# This implementation was originally based on the SciMLBenchmarks version on 01/16/2024,
+# The original rosetta-opf implementation can be found here,
+# https://github.com/lanl-ansi/rosetta-opf/blob/bdc924c23694d09f6393575f6d732176aef7605d/nlpmodels.jl
+#
+# This implementation is an adaption of the original rosetta-opf implementation
+# that uses ConcreteStructs based on the SciMLBenchmarks from 01/16/2024,
 # https://github.com/SciML/SciMLBenchmarks.jl/blob/master/benchmarks/OptimizationFrameworks/optimal_powerflow.jmd
 #
 
