@@ -12,3 +12,6 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 PythonCall = "6099a3de-0909-46bc-b1f4-468b9a2dfc0d"
 ReverseDiff = "37e2e3b7-166d-5795-8a7a-e32c996b4267"
 SparseDiffTools = "47a9eef4-7e08-11e9-0b38-333d64bd3804"
+
+[compat]
+AmplNLWriter = "1.2.1"
