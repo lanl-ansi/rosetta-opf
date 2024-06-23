@@ -16,9 +16,10 @@ PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 
 [compat]
 ADNLPModels = "0.8.2"
-ExaModels = "0.5"
+ExaModels = "0.7"
 Ipopt = "1"
 JuMP = "1.15"
+ModelingToolkit = "9"
 NLPModelsIpopt = "0.10"
 Nonconvex = "2"
 NonconvexIpopt = "0.4"
