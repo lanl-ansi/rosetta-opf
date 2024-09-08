@@ -25,9 +25,7 @@
 %
 \mbox{\bf subject to: } & \nonumber \\
 & \angle V_i = 0 \;\; \forall i \in R \\
-%& \bm {S^{gl}}_k \leq S^g_k \leq \bm {S^{gu}}_k \;\; \forall k \in G  \\
-%& \bm {v^l}_i \leq |V_i| \leq \bm {v^u}_i \;\; \forall i \in N \\
-& \sum_{\substack{k \in G_i}} S^g_k - \sum_{\substack{k \in D_i}} \bm S^d_k - \sum_{\substack{k \in H_i}} \bm Y^s_k |V_i|^2 = \sum_{\substack{(i,j)\in E_i \cup E_i^R}} S_{ij} \;\; \forall i \in N \\ 
+& \sum_{\substack{k \in G_i}} S^g_k - \sum_{\substack{k \in D_i}} \bm S^d_k - \sum_{\substack{k \in H_i}} \bm Y^{s*}_k |V_i|^2 = \sum_{\substack{(i,j)\in E_i \cup E_i^R}} S_{ij} \;\; \forall i \in N \\ 
 & S_{ij} = \frac{\left( \bm Y_{ij} + \bm Y^c_{ij} \right)^*}{|\bm{T}_{ij}|^2} |V_i|^2 - \frac{\bm Y^*_{ij}}{\bm{T}_{ij}} V_i V^*_j \;\; \forall (i,j)\in E \\
 & S_{ji} = \left( \bm Y_{ij} + \bm Y^c_{ji}  \right)^* |V_j|^2 - \frac{\bm Y^*_{ij}}{\bm{T}^*_{ij}} V^*_i V_j \;\; \forall (i,j)\in E \\
 & |S_{ij}|^2 \leq (\bm {s^u}_{ij})^2 \;\; \forall (i,j) \in E \cup E^R \\
